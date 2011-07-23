@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 
 /**
@@ -104,7 +103,8 @@ public class SourceCompiler {
                     try {
                         data = javacCompile(packageName, className, source);
                     } catch (IOException e) {
-                        throw new ClassNotFoundException("Could not compile class " + className + ": " + e.getMessage(), e);
+                        throw new ClassNotFoundException(
+                                "Could not compile class " + className + ": " + e.getMessage(), e);
                     }
                     if (data == null) {
                         classInstance = findSystemClass(name);
@@ -117,26 +117,6 @@ public class SourceCompiler {
             }
         };
         return classLoader.loadClass(packageAndClassName);
-    }
-
-    /**
-     * Get the first public static method of the given class.
-     *
-     * @param className the class name
-     * @return the method name
-     */
-    public Method getMethod(String className) throws ClassNotFoundException {
-        Class<?> clazz = getClass(className);
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method m : methods) {
-            int modifiers = m.getModifiers();
-            if (Modifier.isPublic(modifiers)) {
-                if (Modifier.isStatic(modifiers)) {
-                    return m;
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -221,7 +201,8 @@ public class SourceCompiler {
                     javaFile.getAbsolutePath() });
             throwSyntaxError(buff);
         } catch (Exception e) {
-            throw new IOException("Error compling " + javaFile.getAbsolutePath() + ": " + e.getMessage(), e);
+            throw new IOException("Error compling " +
+                    javaFile.getAbsolutePath() + ": " + e.getMessage(), e);
         } finally {
             System.setErr(old);
         }

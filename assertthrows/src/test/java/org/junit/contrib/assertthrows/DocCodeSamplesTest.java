@@ -19,7 +19,6 @@ package org.junit.contrib.assertthrows;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
-import org.junit.contrib.assertthrows.AssertThrows;
 import static org.junit.Assert.fail;
 import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
 
@@ -30,7 +29,7 @@ import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
  */
 public class DocCodeSamplesTest {
 
-    @Test(expected=IndexOutOfBoundsException.class)
+    @Test(expected = IndexOutOfBoundsException.class)
     public void testIndexOutOfBoundsException() {
         List<String> emptyList = new ArrayList<String>();
         emptyList.get(0);

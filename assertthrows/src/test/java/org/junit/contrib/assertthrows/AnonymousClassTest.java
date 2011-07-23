@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
-import org.junit.contrib.assertthrows.AssertThrows;
 
 /**
  * Tests that are using an anonymous class.
@@ -65,7 +64,7 @@ public class AnonymousClassTest {
             };
             fail();
         } catch (AssertionError e) {
-            assertEquals("Expected an exception to be thrown, " +
+            assertEquals("Expected an exception to be thrown,\n" +
                     "but the method returned successfully",
                     e.getMessage());
             assertNull(e.getCause());
@@ -78,8 +77,8 @@ public class AnonymousClassTest {
             };
             fail();
         } catch (AssertionError e) {
-            assertEquals("Expected an exception of type " +
-                    "NullPointerException to be thrown, " +
+            assertEquals("Expected an exception of type\n" +
+                    "NullPointerException to be thrown,\n" +
                     "but the method returned successfully",
                     e.getMessage());
             assertNull(e.getCause());
@@ -98,8 +97,8 @@ public class AnonymousClassTest {
             fail();
         } catch (AssertionError e) {
             assertEquals("Expected an exception of type\n" +
-                    "NullPointerException to be thrown, " +
-                    "but the method under test threw an exception of type\n" +
+                    "NullPointerException to be thrown,\n" +
+                    "but the method threw an exception of type\n" +
                     "IndexOutOfBoundsException " +
                     "(see in the 'Caused by' for the exception that was thrown)",
                     e.getMessage());

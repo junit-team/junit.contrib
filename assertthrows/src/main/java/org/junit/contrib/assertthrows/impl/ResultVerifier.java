@@ -26,13 +26,15 @@ import java.lang.reflect.Method;
 public interface ResultVerifier {
 
     /**
-     * Verify the result or exception.
+     * Verify the result or exception of a method call.
      *
-     * @param returnValue the returned value or null
+     * @param returnValue the returned value, or null if the method didn't
+     *            return a value or if the returned value is unknown
      * @param t the exception / error or null if the method returned normally
      * @param m the method or null if unknown
      * @param args the arguments or null if unknown
      * @return true if the method should be called again
+     * @throws AssertionError if the verification failed
      */
     boolean verify(Object returnValue, Throwable t, Method m, Object... args);
 

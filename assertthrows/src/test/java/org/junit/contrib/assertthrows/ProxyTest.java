@@ -48,17 +48,17 @@ public class ProxyTest {
         try {
             assertThrows(list).size();
         } catch (AssertionError e) {
-            assertEquals("Expected an exception to be thrown, " +
-                    "but the method returned 0 when calling size()",
+            assertEquals("Expected an exception to be thrown,\n" +
+                    "but the method size() returned 0",
                     e.getMessage());
             assertNull(e.getCause());
         }
         try {
             assertThrows(NullPointerException.class, list).size();
         } catch (AssertionError e) {
-            assertEquals("Expected an exception of type " +
-                    "NullPointerException to be thrown, " +
-                    "but the method returned 0 when calling size()",
+            assertEquals("Expected an exception of type\n" +
+                    "NullPointerException to be thrown,\n" +
+                    "but the method size() returned 0",
                     e.getMessage());
             assertNull(e.getCause());
         }
@@ -71,8 +71,10 @@ public class ProxyTest {
             assertThrows(NullPointerException.class, list).get(0);
         } catch (AssertionError e) {
             assertEquals("Expected an exception of type\n" +
-                    "NullPointerException to be thrown, but the method under test threw an exception of type\n" +
-                    "IndexOutOfBoundsException (see in the 'Caused by' for the exception that was thrown)  for get(0)",
+                    "NullPointerException to be thrown,\n" +
+                    "but the method get(0) threw an exception of type\n" +
+                    "IndexOutOfBoundsException " +
+                    "(see in the 'Caused by' for the exception that was thrown)",
                     e.getMessage());
             assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
         }
@@ -89,6 +91,10 @@ public class ProxyTest {
         assertThrows(n).shortValue();
     }
 
+    /**
+     * A number class that throws UnsupportedOperationException when trying to
+     * convert a number.
+     */
     public static class BadNumber extends Number {
 
         private static final long serialVersionUID = 1L;

@@ -18,6 +18,8 @@ package org.junit.contrib.assertthrows;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -27,90 +29,78 @@ import org.junit.Test;
  */
 public class MyListTest {
 
+    private MyList list;
+
+    @Before
+    public void before() {
+        list = new MyList();
+    }
+
+    @After
+    public void after() {
+        list.close();
+    }
+
     @Test
     public void testAdd() {
-        MyList list = new MyList();
-        try {
-            // empty
-            assertEquals(0, list.size());
-            // trying to add null is not allowed
-            assertThrows(list).add(null);
-            assertEquals(0, list.size());
-            // one element
-            list.add("Apple");
-            assertEquals(1, list.size());
-            assertEquals("Apple", list.get(0));
-            // two elements
-            list.add("Banana");
-            assertEquals(2, list.size());
-            assertEquals("Apple", list.get(0));
-            assertEquals("Banana", list.get(1));
-        } finally {
-            list.close();
-        }
+        // empty
+        assertEquals(0, list.size());
+        // trying to add null is not allowed
+        assertThrows(list).add(null);
+        assertEquals(0, list.size());
+        // one element
+        list.add("Apple");
+        assertEquals(1, list.size());
+        assertEquals("Apple", list.get(0));
+        // two elements
+        list.add("Banana");
+        assertEquals(2, list.size());
+        assertEquals("Apple", list.get(0));
+        assertEquals("Banana", list.get(1));
     }
 
     @Test
     public void testGet() {
-        MyList list = new MyList();
-        try {
-            // empty
-            assertThrows(list).get(-1);
-            assertThrows(list).get(0);
-            // one element
-            list.add("Apple");
-            assertEquals("Apple", list.get(0));
-            assertThrows(list).get(-1);
-            assertThrows(list).get(1);
-            // empty again
-            list.remove(0);
-            assertThrows(list).get(0);
-        } finally {
-            list.close();
-        }
+        // empty
+        assertThrows(list).get(-1);
+        assertThrows(list).get(0);
+        // one element
+        list.add("Apple");
+        assertEquals("Apple", list.get(0));
+        assertThrows(list).get(-1);
+        assertThrows(list).get(1);
+        // empty again
+        list.remove(0);
+        assertThrows(list).get(0);
     }
 
     @Test
     public void testSet() {
-        MyList list = new MyList();
-        try {
-            // empty
-            assertThrows(list).set(0, "Kiwi");
-            // one element
-            list.add("Apple");
-            list.set(0, "Apfel");
-            assertEquals("Apfel", list.get(0));
-            assertThrows(list).set(1, "Kiwi");
-            // two elements
-            list.add("Banana");
-            list.set(1, "Banane");
-            assertEquals("Banane", list.get(1));
-        } finally {
-            list.close();
-        }
+        // empty
+        assertThrows(list).set(0, "Kiwi");
+        // one element
+        list.add("Apple");
+        list.set(0, "Apfel");
+        assertEquals("Apfel", list.get(0));
+        assertThrows(list).set(1, "Kiwi");
+        // two elements
+        list.add("Banana");
+        list.set(1, "Banane");
+        assertEquals("Banane", list.get(1));
     }
 
     @Test
     public void testEmptyList() {
-        MyList list = new MyList();
-        try {
-            assertEquals(0, list.size());
-            assertThrows(list).set(0, "Apple");
-            assertThrows(list).remove(0);
-            assertThrows(list).get(0);
-        } finally {
-            list.close();
-        }
+        assertEquals(0, list.size());
+        assertThrows(list).set(0, "Apple");
+        assertThrows(list).remove(0);
+        assertThrows(list).get(0);
     }
 
     @Test
     public void testClose() {
-        MyList list = new MyList();
-        try {
-            list.add("Apple");
-        } finally {
-            list.close();
-        }
+        list.add("Apple");
+        list.close();
         // closing multiple times is allowed
         list.close();
         // everything else isn't

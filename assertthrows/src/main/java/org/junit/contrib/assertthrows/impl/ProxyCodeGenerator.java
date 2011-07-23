@@ -17,24 +17,19 @@
 package org.junit.contrib.assertthrows.impl;
 
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * A code generator for class proxies.
+ * A Java source code generator for class proxies.
  *
  * @author Thomas Mueller
  */
 public class ProxyCodeGenerator {
-
-    private static SourceCompiler compiler = new SourceCompiler();
-    private static HashMap<Class<?>, Class<?>> proxyMap = new HashMap<Class<?>, Class<?>>();
 
     private final TreeSet<String> imports = new TreeSet<String>();
     private final TreeMap<String, Method> methods = new TreeMap<String, Method>();
@@ -43,58 +38,12 @@ public class ProxyCodeGenerator {
     private Class<?> extendsClass;
     private Constructor<?> constructor;
 
-    /**
-     * Check whether there is already a proxy class generated.
-     *
-     * @param c the class
-     * @return true if yes
-     */
-    public static boolean isGenerated(Class<?> c) {
-        return proxyMap.containsKey(c);
-    }
-
-    /**
-     * Generate a proxy class. The returned class extends the given class.
-     *
-     * @param c the class to extend
-     * @return the proxy class
-     */
-    public static Class<?> getClassProxy(Class<?> c) throws ClassNotFoundException {
-        Class<?> p = proxyMap.get(c);
-        if (p != null) {
-            return p;
-        }
-        ProxyCodeGenerator cg = new ProxyCodeGenerator();
-        String packageName = c.getPackage().getName();
-        if (packageName.startsWith("java.")) {
-            packageName = "proxy." + packageName;
-        }
-        String className = c.getSimpleName() + "Proxy";
-        cg.setName(packageName, className);
-        cg.generateClassProxy(c);
-        StringWriter sw = new StringWriter();
-        cg.write(new PrintWriter(sw));
-        String code = sw.toString();
-        if (c.isAnonymousClass()) {
-            throw new AssertionError("Creating a proxy for the anonymous inner class is not supported: " + c.getName());
-        }
-        if (c.getEnclosingClass() != null && !Modifier.isPublic(c.getModifiers())) {
-            throw new AssertionError("Creating a proxy for a non-public inner class is not supported: " + c.getName());
-        }
-        String name = packageName + "." + className;
-        compiler.setSource(name, code);
-        // System.out.println(code);
-        Class<?> px = compiler.getClass(name);
-        proxyMap.put(c, px);
-        return px;
-    }
-
-    private void setName(String packageName, String className) {
+    void setName(String packageName, String className) {
         this.packageName = packageName;
         this.className = className;
     }
 
-    private void generateClassProxy(Class<?> clazz) {
+    void generateClassProxy(Class<?> clazz) {
         imports.clear();
         addImport(InvocationHandler.class);
         addImport(Method.class);
@@ -125,7 +74,8 @@ public class ProxyCodeGenerator {
     }
 
     private void addMethod(Method m) {
-        if (methods.containsKey(getMethodName(m))) {
+        String methodKey = getMethodKey(m);
+        if (methods.containsKey(methodKey)) {
             // already declared in a subclass
             return;
         }
@@ -136,10 +86,10 @@ public class ProxyCodeGenerator {
         for (Class<?> c : m.getExceptionTypes()) {
             addImport(c);
         }
-        methods.put(getMethodName(m), m);
+        methods.put(methodKey, m);
     }
 
-    private String getMethodName(Method m) {
+    private String getMethodKey(Method m) {
         StringBuilder buff = new StringBuilder();
         buff.append(m.getReturnType()).append(' ');
         buff.append(m.getName());
@@ -183,7 +133,7 @@ public class ProxyCodeGenerator {
         return s;
     }
 
-    private void write(PrintWriter writer) {
+    void write(PrintWriter writer) {
         if (packageName != null) {
             writer.println("package " + packageName + ";");
         }
@@ -239,7 +189,8 @@ public class ProxyCodeGenerator {
         writer.println("        this.ih = ih;");
         writer.println("    }");
         writer.println("    @SuppressWarnings(\"unchecked\")");
-        writer.println("    private static <T extends RuntimeException> T convertException(Throwable e) {");
+        writer.println("    private static <T extends RuntimeException> T " +
+                "convertException(Throwable e) {");
         writer.println("        if (e instanceof Error) {");
         writer.println("            throw (Error) e;");
         writer.println("        }");
@@ -276,7 +227,22 @@ public class ProxyCodeGenerator {
             }
             writer.println(" {");
             writer.println("        try {");
-            writer.print("            ");
+            writer.println("            if (ih == null) {");
+            writer.print("                ");
+            if (retClass != void.class) {
+                writer.print("return ");
+            }
+            writer.print("super.");
+            writer.print(m.getName());
+            writer.print("(");
+            for (int i = 0; i < m.getParameterTypes().length; i++) {
+                if (i > 0) {
+                    writer.print(", ");
+                }
+                writer.print("p" + i);
+            }
+            writer.println(");");
+            writer.print("            } else {");
             if (retClass != void.class) {
                 writer.print("return (");
                 if (retClass == boolean.class) {
@@ -322,6 +288,7 @@ public class ProxyCodeGenerator {
                 writer.print("p" + i);
             }
             writer.println("});");
+            writer.println("            }");
             writer.println("        } catch (Throwable e) {");
             writer.println("            throw convertException(e);");
             writer.println("        }");
@@ -329,27 +296,6 @@ public class ProxyCodeGenerator {
         }
         writer.println("}");
         writer.flush();
-    }
-
-    /**
-     * Format a method call, including arguments, for an exception message.
-     *
-     * @param m the method
-     * @param args the arguments
-     * @return the formatted string
-     */
-    public static String formatMethodCall(Method m, Object... args) {
-        StringBuilder buff = new StringBuilder();
-        buff.append(m.getName()).append('(');
-        for (int i = 0; args != null && i < args.length; i++) {
-            Object a = args[i];
-            if (i > 0) {
-                buff.append(", ");
-            }
-            buff.append(a == null ? "null" : a.toString());
-        }
-        buff.append(")");
-        return buff.toString();
     }
 
 }
