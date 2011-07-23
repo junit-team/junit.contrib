@@ -132,7 +132,7 @@ public abstract class AssertThrows {
         Class<?> c = obj.getClass();
 
         InvocationHandler ih = new InvocationHandler() {
-            private Exception called = new Exception("No method was called");
+            private Exception called = new Exception("No method was called on " + obj);
             public void finalize() {
                 if (called != null) {
                     called.printStackTrace(System.err);
