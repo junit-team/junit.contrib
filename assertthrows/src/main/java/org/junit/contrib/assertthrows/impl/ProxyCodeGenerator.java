@@ -18,6 +18,7 @@ package org.junit.contrib.assertthrows.impl;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -37,6 +38,7 @@ public class ProxyCodeGenerator {
     private String className;
     private Class<?> extendsClass;
     private Constructor<?> constructor;
+    private String invocationHandlerFieldName = "ih";
 
     void setName(String packageName, String className) {
         this.packageName = packageName;
@@ -48,6 +50,7 @@ public class ProxyCodeGenerator {
         addImport(InvocationHandler.class);
         addImport(Method.class);
         addImport(clazz);
+        invocationHandlerFieldName = getUniqueFieldName(clazz, invocationHandlerFieldName);
         extendsClass = clazz;
         int doNotOverride = Modifier.FINAL | Modifier.STATIC |
                 Modifier.PRIVATE | Modifier.ABSTRACT | Modifier.VOLATILE;
@@ -71,6 +74,47 @@ public class ProxyCodeGenerator {
                 constructor = c;
             }
         }
+    }
+
+    /**
+     * Get a unique field name for the given class. The preferred field name is
+     * used if possible, but this field is already declared in this class or any
+     * superclass, then a new field name is generated.
+     *
+     * @param c the class
+     * @param preferredFieldName the preferred field name
+     * @return a unique field name
+     */
+    public static String getUniqueFieldName(Class<?> c, String preferredFieldName) {
+        if (!hasField(c, preferredFieldName)) {
+            return preferredFieldName;
+        }
+        for (int i = 0;; i++) {
+            String name = preferredFieldName + i;
+            if (!hasField(c, name)) {
+                return name;
+            }
+        }
+    }
+
+    /**
+     * Check whether the given class knows the given field, that is, if the
+     * field is protected or public in the class or one of its superclasses.
+     *
+     * @param clazz the class
+     * @param fieldName the field name
+     * @return true if the field is known
+     */
+    public static boolean hasField(Class<?> clazz, String fieldName) {
+        do {
+            for (Field f : clazz.getDeclaredFields()) {
+                if (f.getName().equals(fieldName)) {
+                    return true;
+                }
+            }
+            clazz = clazz.getSuperclass();
+        } while (clazz != null);
+        return false;
     }
 
     private void addMethod(Method m) {
@@ -105,8 +149,8 @@ public class ProxyCodeGenerator {
             c = c.getComponentType();
         }
         if (!c.isPrimitive()) {
-            if (!"java.lang".equals(c.getPackage().getName())) {
-                imports.add(c.getPackage().getName() + "." + getClassName(c));
+            if (!"java.lang".equals(ProxyUtils.getPackageName(c))) {
+                imports.add(ProxyUtils.getPackageName(c) + "." + getClassName(c));
             }
         }
     }
@@ -145,7 +189,10 @@ public class ProxyCodeGenerator {
             writer.print(" extends " + getClassName(extendsClass));
         }
         writer.println(" {");
-        writer.println("    private final InvocationHandler ih;");
+        writer.print("    private final InvocationHandler ");
+        writer.print(invocationHandlerFieldName);
+        writer.println(";");
+
         writer.println("    public " + className + "() {");
         writer.println("        this(new InvocationHandler() {");
         writer.println("            public Object invoke(Object proxy,");
@@ -186,7 +233,9 @@ public class ProxyCodeGenerator {
             }
             writer.println(");");
         }
-        writer.println("        this.ih = ih;");
+        writer.print("        this.");
+        writer.print(invocationHandlerFieldName);
+        writer.println(" = ih;");
         writer.println("    }");
         writer.println("    @SuppressWarnings(\"unchecked\")");
         writer.println("    private static <T extends RuntimeException> T " +
@@ -227,7 +276,9 @@ public class ProxyCodeGenerator {
             }
             writer.println(" {");
             writer.println("        try {");
-            writer.println("            if (ih == null) {");
+            writer.print("            if (");
+            writer.print(invocationHandlerFieldName);
+            writer.println(" == null) {");
             writer.print("                ");
             if (retClass != void.class) {
                 writer.print("return ");
@@ -266,7 +317,8 @@ public class ProxyCodeGenerator {
                 }
                 writer.print(") ");
             }
-            writer.print("ih.invoke(this, ");
+            writer.print(invocationHandlerFieldName);
+            writer.print(".invoke(this, ");
             writer.println(getClassName(m.getDeclaringClass()) +
                     ".class.getDeclaredMethod(\"" + m.getName() +
                     "\",");

@@ -25,18 +25,25 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
  * This class allows to convert source code to a class. It uses one class loader
- * per class, and internally uses <code>com.sun.tools.javac.Main</code>.
+ * per class, and internally uses <code>javax.tools.JavaCompiler</code>, or
+ * <code>com.sun.tools.javac.Main</code> (when using Java 5).
  *
  * @author Thomas Mueller
  */
 public class SourceCompiler {
 
     private static final Class<?> JAVAC_SUN;
+
+    // private static final JavaCompiler JAVA_COMPILER;
+    private static final Object JAVA_COMPILER;
 
     /**
      * The class name to source code map.
@@ -51,6 +58,14 @@ public class SourceCompiler {
     private String compileDir = System.getProperty("java.io.tmpdir", ".");
 
     static {
+        Object comp;
+        try {
+            // comp = ToolProvider.getSystemJavaCompiler();
+            comp = ProxyUtils.callStaticMethod("javax.tools.ToolProvider.getSystemJavaCompiler");
+        } catch (Exception e) {
+            comp = null;
+        }
+        JAVA_COMPILER = comp;
         Class<?> clazz;
         try {
             clazz = Class.forName("com.sun.tools.javac.Main");
@@ -77,6 +92,7 @@ public class SourceCompiler {
      *
      * @param packageAndClassName the class name
      * @return the class
+     * @throws ClassNotFoundException if the class is not found or can't be compiled
      */
     public Class<?> getClass(String packageAndClassName) throws ClassNotFoundException {
 
@@ -137,33 +153,31 @@ public class SourceCompiler {
         }
         File javaFile = new File(dir, className + ".java");
         File classFile = new File(dir, className + ".class");
+        classFile.delete();
         try {
             FileWriter f = new FileWriter(javaFile.getAbsolutePath(), false);
-            PrintWriter out = new PrintWriter(new BufferedWriter(f));
-            classFile.delete();
-            if (source.startsWith("package ")) {
+            try {
+                PrintWriter out = new PrintWriter(new BufferedWriter(f));
                 out.println(source);
-            } else {
-                int endImport = source.indexOf("@CODE");
-                String importCode = "import java.util.*;\n" +
-                    "import java.math.*;\n" +
-                    "import java.sql.*;\n";
-                if (endImport >= 0) {
-                    importCode = source.substring(0, endImport);
-                    source = source.substring("@CODE".length() + endImport);
-                }
-                if (packageName != null) {
-                    out.println("package " + packageName + ";");
-                }
-                out.println(importCode);
-                out.println("public class "+ className +" {\n" +
-                        "    public static " +
-                        source + "\n" +
-                        "}\n");
+                out.close();
+            } finally {
+                f.close();
             }
-            out.close();
-            if (JAVAC_SUN != null) {
-                javacSun(javaFile);
+            try {
+                if (JAVA_COMPILER != null) {
+                    javaxToolsJavac(javaFile);
+                } else if (JAVAC_SUN != null) {
+                    javacSun(javaFile);
+                } else {
+                    throw new IOException("Could not load a java compiler");
+                }
+            } catch (IOException e) {
+                throw e;
+            } catch (Exception e) {
+                IOException io = new IOException("Error compling " +
+                        javaFile.getAbsolutePath() + ": " + e.getMessage());
+                io.initCause(e);
+                throw io;
             }
             byte[] data = new byte[(int) classFile.length()];
             DataInputStream in = new DataInputStream(new FileInputStream(classFile));
@@ -176,16 +190,44 @@ public class SourceCompiler {
         }
     }
 
-    private void throwSyntaxError(ByteArrayOutputStream out) throws IOException {
-        String err = new String(out.toByteArray(), "UTF-8");
-        if (err.startsWith("Note:")) {
-            // unchecked or unsafe operations - just a warning
-        } else if (err.length() > 0) {
-            throw new IOException(err);
-        }
+    private void javaxToolsJavac(File javaFile) throws Exception {
+
+        StringWriter writer = new StringWriter();
+
+        Iterable<String> options = Arrays.asList(
+                "-sourcepath", compileDir,
+                "-d", compileDir,
+                "-encoding", "UTF-8");
+
+        // JavaCompiler compiler = (JavaCompiler) JAVA_COMPILER;
+        Object compiler = JAVA_COMPILER;
+
+        // StandardJavaFileManager fileManager = compiler.
+        //         getStandardFileManager(null, null, Charset.forName("UTF-8"));
+        Object fileManager = ProxyUtils.callMethod(compiler, "getStandardFileManager",
+                null, null, Charset.forName("UTF-8"));
+
+        // Iterable<? extends JavaFileObject> compilationUnits =
+        //     fileManager.getJavaFileObjects(javaFile);
+        Object compilationUnits = ProxyUtils.callMethod(fileManager, "getJavaFileObjects",
+                (Object) new File[] { javaFile });
+
+        // Task task = compiler.getTask(writer, fileManager, null, options,
+        //         null, compilationUnits);
+        Object task = ProxyUtils.callMethod(compiler, "getTask", writer, fileManager, null, options,
+                    null, compilationUnits);
+
+        // task.call();
+        ProxyUtils.callMethod(task, "call");
+
+        // fileManager.close();
+        ProxyUtils.callMethod(fileManager, "close");
+
+        String err = writer.toString();
+        throwSyntaxError(err);
     }
 
-    private void javacSun(File javaFile) throws IOException {
+    private void javacSun(File javaFile) throws Exception {
         PrintStream old = System.err;
         ByteArrayOutputStream buff = new ByteArrayOutputStream();
         PrintStream temp = new PrintStream(buff);
@@ -199,12 +241,18 @@ public class SourceCompiler {
                     "-d", compileDir,
                     "-encoding", "UTF-8",
                     javaFile.getAbsolutePath() });
-            throwSyntaxError(buff);
-        } catch (Exception e) {
-            throw new IOException("Error compling " +
-                    javaFile.getAbsolutePath() + ": " + e.getMessage(), e);
+            String err = new String(buff.toByteArray(), "UTF-8");
+            throwSyntaxError(err);
         } finally {
             System.setErr(old);
+        }
+    }
+
+    private void throwSyntaxError(String err) throws IOException {
+        if (err.startsWith("Note:")) {
+            // unchecked or unsafe operations - just a warning
+        } else if (err.length() > 0) {
+            throw new IOException(err);
         }
     }
 

@@ -66,7 +66,7 @@ public class ProxyClassGenerator {
                     "is not supported: " + c.getName());
         }
         ProxyCodeGenerator cg = new ProxyCodeGenerator();
-        String packageName = c.getPackage().getName();
+        String packageName = ProxyUtils.getPackageName(c);
         if (packageName.startsWith("java.")) {
             packageName = "proxy." + packageName;
         }

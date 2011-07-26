@@ -18,11 +18,14 @@ package org.junit.contrib.assertthrows;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import java.util.Random;
 import org.junit.Test;
+import org.junit.contrib.assertthrows.impl.ProxyClassGenerator;
+import org.junit.contrib.assertthrows.impl.ProxyCodeGenerator;
 import org.junit.contrib.assertthrows.impl.ProxyUtils;
 
 /**
- * Tests for the proxy utility class.
+ * Tests for the proxy utility classes.
  *
  * @author Thomas Mueller
  */
@@ -55,6 +58,51 @@ public class ProxyUtilsTest {
         assertEquals(
                 Double.valueOf(0D),
                 ProxyUtils.getDefaultValue(double.class));
+    }
+
+    @Test
+    public void testPackageName() {
+        assertEquals("", ProxyUtils.getPackageName(int.class));
+        assertEquals("java.lang", ProxyUtils.getPackageName(Integer.class));
+        Class<?> p = ProxyClassGenerator.getClassProxy(Random.class);
+        assertEquals("proxy.java.util", ProxyUtils.getPackageName(p));
+    }
+
+    @Test
+    public void testUniqueFieldName() {
+        assertEquals("test", ProxyCodeGenerator.getUniqueFieldName(ProxyUtilsTest.class, "test"));
+
+        /**
+         * A very simple test class.
+         */
+        class Test {
+
+            /**
+             * This field can't be overwritten in s subclass.
+             */
+            public String value;
+
+            public String toString() {
+                return value;
+            }
+        }
+
+        /**
+         * Another test class with a similar field.
+         */
+        class Test2 extends Test {
+
+            /**
+             * Another field that can't be overwritten.
+             */
+            protected String value0;
+
+            public String toString() {
+                return value0;
+            }
+        }
+
+        assertEquals("value1", ProxyCodeGenerator.getUniqueFieldName(Test2.class, "value"));
     }
 
 }
