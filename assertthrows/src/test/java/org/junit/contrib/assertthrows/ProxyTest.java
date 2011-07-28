@@ -119,6 +119,6 @@ public class ProxyTest {
             throw new UnsupportedOperationException();
         }
 
-    };
+    }
 
 }

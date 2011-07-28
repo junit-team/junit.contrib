@@ -38,6 +38,7 @@ Thomas Mueller
 </li><li><a href="#Proxy">Proxy</a>
 </li><li><a href="#AnonymousClass">Anonymous Class</a>
 </li><li><a href="#Dependencies">Dependencies</a>
+</li><li><a href="#KnownProblems">Known Problems</a>
 </li></ul>
 
 <h2 id="TheProblem">The Problem</h2>
@@ -206,6 +207,12 @@ When using Maven, use:
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;
 </pre>
+
+<h2 id="KnownProblems">Known Problems</h2>
+<p>
+There are classpath problems when using Maven 2.x. together with the the compiling proxy factory.
+If the compiling proxy factory is required, you will need to use Maven 3.x.
+</p>
 
 </body>
 </html>

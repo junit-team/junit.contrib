@@ -54,14 +54,13 @@ public class ExceptionVerifier implements ResultVerifier {
                 if (expectedMessage == null) {
                     // don't verify the message
                     return false;
-                } else {
-                    if (expectedMessage.equals(t.getMessage())) {
-                        return false;
-                    }
-                    throw new AssertionError(
-                            "Expected message:\n" + expectedMessage + "\n" +
-                            "but was: " + t.getMessage());
                 }
+                if (expectedMessage.equals(t.getMessage())) {
+                    return false;
+                }
+                throw new AssertionError(
+                        "Expected message:\n" + expectedMessage + "\n" +
+                        "but was: " + t.getMessage());
             }
         }
         String expected;

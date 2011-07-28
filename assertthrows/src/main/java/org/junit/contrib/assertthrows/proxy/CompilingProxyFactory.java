@@ -422,7 +422,7 @@ public class CompilingProxyFactory extends ProxyFactory {
                     writer.print("p" + i);
                 }
                 writer.println(");");
-                writer.print("            } else {");
+                writer.println("            } else {");
                 if (retClass != void.class) {
                     writer.print("return (");
                     if (retClass == boolean.class) {
