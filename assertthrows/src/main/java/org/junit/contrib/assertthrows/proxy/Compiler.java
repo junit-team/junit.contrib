@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.junit.contrib.assertthrows.impl;
+package org.junit.contrib.assertthrows.proxy;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -33,12 +33,12 @@ import java.util.HashMap;
 
 /**
  * This class allows to convert source code to a class. It uses one class loader
- * per class, and internally uses <code>javax.tools.JavaCompiler</code>, or
- * <code>com.sun.tools.javac.Main</code> (when using Java 5).
+ * per class, and internally uses <code>javax.tools.JavaCompiler</code> if
+ * available, and <code>com.sun.tools.javac.Main</code> otherwise.
  *
  * @author Thomas Mueller
  */
-public class SourceCompiler {
+public class Compiler {
 
     private static final Class<?> JAVAC_SUN;
 
@@ -61,18 +61,19 @@ public class SourceCompiler {
         Object comp;
         try {
             // comp = ToolProvider.getSystemJavaCompiler();
-            comp = ProxyUtils.callStaticMethod("javax.tools.ToolProvider.getSystemJavaCompiler");
+            comp = ReflectionUtils.callStaticMethod(
+                    "javax.tools.ToolProvider.getSystemJavaCompiler");
         } catch (Exception e) {
             comp = null;
         }
         JAVA_COMPILER = comp;
-        Class<?> clazz;
+        Class<?> javac;
         try {
-            clazz = Class.forName("com.sun.tools.javac.Main");
+            javac = Class.forName("com.sun.tools.javac.Main");
         } catch (Exception e) {
-            clazz = null;
+            javac = null;
         }
-        JAVAC_SUN = clazz;
+        JAVAC_SUN = javac;
     }
 
     /**
@@ -204,24 +205,24 @@ public class SourceCompiler {
 
         // StandardJavaFileManager fileManager = compiler.
         //         getStandardFileManager(null, null, Charset.forName("UTF-8"));
-        Object fileManager = ProxyUtils.callMethod(compiler, "getStandardFileManager",
+        Object fileManager = ReflectionUtils.callMethod(compiler, "getStandardFileManager",
                 null, null, Charset.forName("UTF-8"));
 
         // Iterable<? extends JavaFileObject> compilationUnits =
         //     fileManager.getJavaFileObjects(javaFile);
-        Object compilationUnits = ProxyUtils.callMethod(fileManager, "getJavaFileObjects",
+        Object compilationUnits = ReflectionUtils.callMethod(fileManager, "getJavaFileObjects",
                 (Object) new File[] { javaFile });
 
-        // Task task = compiler.getTask(writer, fileManager, null, options,
-        //         null, compilationUnits);
-        Object task = ProxyUtils.callMethod(compiler, "getTask", writer, fileManager, null, options,
-                    null, compilationUnits);
+        // Task task = compiler.getTask(
+        //         writer, fileManager, null, options, null, compilationUnits);
+        Object task = ReflectionUtils.callMethod(compiler, "getTask",
+                writer, fileManager, null, options, null, compilationUnits);
 
         // task.call();
-        ProxyUtils.callMethod(task, "call");
+        ReflectionUtils.callMethod(task, "call");
 
         // fileManager.close();
-        ProxyUtils.callMethod(fileManager, "close");
+        ReflectionUtils.callMethod(fileManager, "close");
 
         String err = writer.toString();
         throwSyntaxError(err);

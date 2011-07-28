@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.junit.contrib.assertthrows.impl;
+package org.junit.contrib.assertthrows.verify;
 
 import java.lang.reflect.Method;
 
@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 public class ExceptionVerifier implements ResultVerifier {
 
     private final Class<? extends Exception> expectedExceptionClass;
+    private final String expectedMessage;
 
     /**
      * Create a new verifier that checks against the given class (or any of it's
@@ -33,9 +34,13 @@ public class ExceptionVerifier implements ResultVerifier {
      * class is null).
      *
      * @param expectedExceptionClass the expected exception base class, or null
+     * @param expectedMessage the expected message, or null
      */
-    public ExceptionVerifier(Class<? extends Exception> expectedExceptionClass) {
+    public ExceptionVerifier(
+            Class<? extends Exception> expectedExceptionClass,
+            String expectedMessage) {
         this.expectedExceptionClass = expectedExceptionClass;
+        this.expectedMessage = expectedMessage;
     }
 
     public boolean verify(Object returnValue, Throwable t, Method m, Object... args) {
@@ -44,10 +49,19 @@ public class ExceptionVerifier implements ResultVerifier {
             if (expectedExceptionClass == null) {
                 // don't verify the exception class
                 return false;
-            }
-            if (expectedExceptionClass.isAssignableFrom(t.getClass())) {
+            } else if (expectedExceptionClass.isAssignableFrom(t.getClass())) {
                 // matching expected class
-                return false;
+                if (expectedMessage == null) {
+                    // don't verify the message
+                    return false;
+                } else {
+                    if (expectedMessage.equals(t.getMessage())) {
+                        return false;
+                    }
+                    throw new AssertionError(
+                            "Expected message:\n" + expectedMessage + "\n" +
+                            "but was: " + t.getMessage());
+                }
             }
         }
         String expected;

@@ -22,7 +22,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.contrib.assertthrows.impl.ResultVerifier;
+import org.junit.contrib.assertthrows.proxy.ProxyFactory;
+import org.junit.contrib.assertthrows.verify.ResultVerifier;
 
 /**
  * Test a custom extension of the ResultVerifier. It specially tests that the
@@ -51,7 +52,7 @@ public class ExtensionTest {
 
     @Test
     public void testProxy() {
-        AssertThrows.createClassProxy(Random.class);
+        ProxyFactory.useClassProxyFactory(Random.class);
         assertEventuallyEquals(10, random).nextInt(20);
         try {
             assertEventuallyEquals(20, random).nextInt(10);

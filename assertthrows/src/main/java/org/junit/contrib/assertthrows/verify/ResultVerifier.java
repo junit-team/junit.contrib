@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.junit.contrib.assertthrows.impl;
+package org.junit.contrib.assertthrows.verify;
 
 import java.lang.reflect.Method;
 

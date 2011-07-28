@@ -51,12 +51,15 @@ public class DocCodeSamplesTest {
         List<String> emptyList = new ArrayList<String>();
         assertThrows(emptyList).get(0);
         assertThrows(IndexOutOfBoundsException.class, emptyList).get(0);
+        assertThrows(new IndexOutOfBoundsException(
+                "Index: 0, Size: 0"), emptyList).
+                get(0);
     }
 
     @Test
     public void testClassProxy() {
         ArrayList<String> emptyList = new ArrayList<String>();
-        AssertThrows.createClassProxy(ArrayList.class);
+        AssertThrows.useClassProxy(ArrayList.class);
         assertThrows(emptyList).get(0);
     }
 
@@ -67,6 +70,10 @@ public class DocCodeSamplesTest {
         }};
         new AssertThrows(NumberFormatException.class) { public void test() {
             Integer.parseInt("x");
+        }};
+        new AssertThrows(new NumberFormatException("For input string: \"x\"")) {
+            public void test() {
+                Integer.parseInt("x");
         }};
     }
 

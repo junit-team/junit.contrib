@@ -14,63 +14,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.junit.contrib.assertthrows;
+package org.junit.contrib.assertthrows.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import java.util.Random;
 import org.junit.Test;
-import org.junit.contrib.assertthrows.impl.ProxyClassGenerator;
-import org.junit.contrib.assertthrows.impl.ProxyCodeGenerator;
-import org.junit.contrib.assertthrows.impl.ProxyUtils;
 
 /**
  * Tests for the proxy utility classes.
  *
  * @author Thomas Mueller
  */
-public class ProxyUtilsTest {
+public class ReflectionUtilsTest {
 
     @Test
     public void testDefaultValue() {
-        assertNull(ProxyUtils.getDefaultValue(Integer.class));
+        assertNull(ReflectionUtils.getDefaultValue(Integer.class));
         assertEquals(
                 Boolean.valueOf(false),
-                ProxyUtils.getDefaultValue(boolean.class));
+                ReflectionUtils.getDefaultValue(boolean.class));
         assertEquals(
                 Byte.valueOf((byte) 0),
-                ProxyUtils.getDefaultValue(byte.class));
+                ReflectionUtils.getDefaultValue(byte.class));
         assertEquals(
                 Character.valueOf((char) 0),
-                ProxyUtils.getDefaultValue(char.class));
+                ReflectionUtils.getDefaultValue(char.class));
         assertEquals(
                 Short.valueOf((short) 0),
-                ProxyUtils.getDefaultValue(short.class));
+                ReflectionUtils.getDefaultValue(short.class));
         assertEquals(
                 Integer.valueOf(0),
-                ProxyUtils.getDefaultValue(int.class));
+                ReflectionUtils.getDefaultValue(int.class));
         assertEquals(
                 Long.valueOf(0L),
-                ProxyUtils.getDefaultValue(long.class));
+                ReflectionUtils.getDefaultValue(long.class));
         assertEquals(
                 Float.valueOf(0F),
-                ProxyUtils.getDefaultValue(float.class));
+                ReflectionUtils.getDefaultValue(float.class));
         assertEquals(
                 Double.valueOf(0D),
-                ProxyUtils.getDefaultValue(double.class));
+                ReflectionUtils.getDefaultValue(double.class));
     }
 
     @Test
     public void testPackageName() {
-        assertEquals("", ProxyUtils.getPackageName(int.class));
-        assertEquals("java.lang", ProxyUtils.getPackageName(Integer.class));
-        Class<?> p = ProxyClassGenerator.getClassProxy(Random.class);
-        assertEquals("proxy.java.util", ProxyUtils.getPackageName(p));
+        assertEquals("", ReflectionUtils.getPackageName(int.class));
+        assertEquals("java.lang", ReflectionUtils.getPackageName(Integer.class));
+        Class<?> p = CompilingProxyFactory.getInstance().getClassProxy(Random.class);
+        assertEquals("proxy.java.util", ReflectionUtils.getPackageName(p));
     }
 
     @Test
     public void testUniqueFieldName() {
-        assertEquals("test", ProxyCodeGenerator.getUniqueFieldName(ProxyUtilsTest.class, "test"));
+        assertEquals("test", CompilingProxyFactory.getUniqueFieldName(
+                ReflectionUtilsTest.class, "test"));
 
         /**
          * A very simple test class.
@@ -102,7 +100,7 @@ public class ProxyUtilsTest {
             }
         }
 
-        assertEquals("value1", ProxyCodeGenerator.getUniqueFieldName(Test2.class, "value"));
+        assertEquals("value1", CompilingProxyFactory.getUniqueFieldName(Test2.class, "value"));
     }
 
 }

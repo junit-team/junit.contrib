@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.junit.contrib.assertthrows.impl;
+package org.junit.contrib.assertthrows.proxy;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -24,9 +24,9 @@ import java.lang.reflect.Modifier;
  *
  * @author Thomas Mueller
  */
-public class ProxyUtils {
+public class ReflectionUtils {
 
-    private ProxyUtils() {
+    private ReflectionUtils() {
         // utility class
     }
 
@@ -34,28 +34,28 @@ public class ProxyUtils {
      * Get the default value for the given class. For non-primitive classes,
      * this is null, and for primitive classes this is the zero or false.
      *
-     * @param clazz the class
+     * @param c the class
      * @return false, zero, or null
      */
-    public static Object getDefaultValue(Class<?> clazz) {
-        if (!clazz.isPrimitive()) {
+    public static Object getDefaultValue(Class<?> c) {
+        if (!c.isPrimitive()) {
             return null;
         }
-        if (clazz == boolean.class) {
+        if (c == boolean.class) {
             return false;
-        } else if (clazz == byte.class) {
+        } else if (c == byte.class) {
             return (byte) 0;
-        } else if (clazz == char.class) {
+        } else if (c == char.class) {
             return (char) 0;
-        } else if (clazz == short.class) {
+        } else if (c == short.class) {
             return (short) 0;
-        } else if (clazz == int.class) {
+        } else if (c == int.class) {
             return 0;
-        } else if (clazz == long.class) {
+        } else if (c == long.class) {
             return 0L;
-        } else if (clazz == float.class) {
+        } else if (c == float.class) {
             return 0F;
-        } else if (clazz == double.class) {
+        } else if (c == double.class) {
             return 0D;
         }
         return null;
@@ -64,32 +64,32 @@ public class ProxyUtils {
     /**
      * Convert primitive class names to java.lang.* class names.
      *
-     * @param clazz the class (for example: int)
+     * @param c the class (for example: int)
      * @return the non-primitive class (for example: java.lang.Integer)
      */
-    public static Class<?> getNonPrimitiveClass(Class<?> clazz) {
-        if (!clazz.isPrimitive()) {
-            return clazz;
-        } else if (clazz == boolean.class) {
+    public static Class<?> getNonPrimitiveClass(Class<?> c) {
+        if (!c.isPrimitive()) {
+            return c;
+        } else if (c == boolean.class) {
             return Boolean.class;
-        } else if (clazz == byte.class) {
+        } else if (c == byte.class) {
             return Byte.class;
-        } else if (clazz == char.class) {
+        } else if (c == char.class) {
             return Character.class;
-        } else if (clazz == double.class) {
+        } else if (c == double.class) {
             return Double.class;
-        } else if (clazz == float.class) {
+        } else if (c == float.class) {
             return Float.class;
-        } else if (clazz == int.class) {
+        } else if (c == int.class) {
             return Integer.class;
-        } else if (clazz == long.class) {
+        } else if (c == long.class) {
             return Long.class;
-        } else if (clazz == short.class) {
+        } else if (c == short.class) {
             return Short.class;
-        } else if (clazz == void.class) {
+        } else if (c == void.class) {
             return Void.class;
         }
-        return clazz;
+        return c;
     }
 
     /**
@@ -131,7 +131,7 @@ public class ProxyUtils {
         int lastDot = classAndMethod.lastIndexOf('.');
         String className = classAndMethod.substring(0, lastDot);
         String methodName = classAndMethod.substring(lastDot + 1);
-        return classMethodInternal(methodName, Class.forName(className), null, params);
+        return callMethod(null, Class.forName(className), methodName, params);
     }
 
     /**
@@ -149,17 +149,17 @@ public class ProxyUtils {
             Object instance,
             String methodName,
             Object... params) throws Exception {
-        return classMethodInternal(methodName, instance.getClass(), instance, params);
+        return callMethod(instance, instance.getClass(), methodName, params);
     }
 
-    private static Object classMethodInternal(
-            String methodName, Class<?> clazz,
-            Object instance,
+    private static Object callMethod(
+            Object instance, Class<?> c,
+            String methodName,
             Object... params) throws Exception {
         Method best = null;
         int bestMatch = 0;
         boolean isStatic = instance == null;
-        for (Method m : clazz.getMethods()) {
+        for (Method m : c.getMethods()) {
             if (Modifier.isStatic(m.getModifiers()) == isStatic &&
                     m.getName().equals(methodName)) {
                 int p = match(m.getParameterTypes(), params);

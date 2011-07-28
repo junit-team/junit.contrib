@@ -37,7 +37,7 @@ Thomas Mueller
 </li><li><a href="#TryFailCatch">Try-Fail-Catch</a>
 </li><li><a href="#Proxy">Proxy</a>
 </li><li><a href="#AnonymousClass">Anonymous Class</a>
-</li><li><a href="#FuturePlans">Future Plans</a>
+</li><li><a href="#Dependencies">Dependencies</a>
 </li></ul>
 
 <h2 id="TheProblem">The Problem</h2>
@@ -77,6 +77,10 @@ try {
     // expected
 }
 </pre>
+<p>
+This will allow you to verify the exception message as well. 
+However, it is very easy to forget the <code>fail()</code>.
+</p>
 
 <h2 id="Proxy">Proxy</h2> 
 <p>
@@ -92,6 +96,14 @@ To verify the correct exception is thrown, use:
 </p>
 <pre>
 assertThrows(IndexOutOfBoundsException.class, emptyList).get(0);
+</pre>
+<p>
+To verify the exception message as well, use:
+</p>
+<pre>
+assertThrows(new IndexOutOfBoundsException(
+    "Index: 0, Size: 0"), emptyList).
+    get(0);
 </pre>
 <p>
 Please note you need to add the following static import statement:
@@ -110,31 +122,32 @@ This solution works best with interfaces (as in this example the <code>List</cod
 By default, <code>assertThrows</code> will try to create a proxy 
 using the <code>java.lang.reflect.Proxy</code> mechanism.
 For classes that do not implement an interface, and to test methods that are not part of any interface,
-a class proxy (a proxy that extends a class, and not just implements interfaces) is required. 
+a class proxy is required (a proxy that extends a class, and not just implements interfaces).
 Because this is tricky, <code>assertThrows</code> doesn't do that by default.
-To explicitly create a class proxy, use <code>AssertThrows.createClassProxy</code>.
+To explicitly use a class proxy, use <code>AssertThrows.useClassProxy</code>.
 As an example, if you declare the <code>emptyList</code> as an instance 
-of the concrete class <code>ArrayList</code>, you need to create a class proxy as follows:
+of the concrete class <code>ArrayList</code>, you need to tell the tool to use a class proxy:
 </p>
 <pre>
 ArrayList&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
-AssertThrows.createClassProxy(ArrayList.class);
+AssertThrows.useClassProxy(ArrayList.class);
 assertThrows(emptyList).get(0);
 </pre>
 <p>
-Once such a class proxy class is created, it is used for all future <code>assertThrows</code> calls
+Once such a class proxy is created, it is used for all future <code>assertThrows</code> calls
 where the provided object is of exactly this class.
-Creating a proxy for a class is a bit challenging.
+Creating a proxy that extends a class is a bit challenging.
 It is not possibly to create a proxy for a final class, because extending a final class is not allowed.
 Also, final methods can not be overriden.
-Currently, the proxy generator first creates the Java source code for the proxy class,
-and then compiles it using <code>javac</code>. 
-The current implementation only supports the Sun JVM to do so.
-(The plan is to generate the bytecode directly in the future, without the source code round trip.)
-The current implementation doesn't support classes without a public constructor.
-Classes without non-argument constructors are supported only if the constructor
-supports null / zero values for all parameters.
-Inner classes and anonymous classes are not currently supported.
+To create class proxies, the proxy factory uses the libraries
+<a href="http://cglib.sourceforge.net/">Cglib</a> and 
+<a href="http://code.google.com/p/objenesis/">Objenesis</a> if they are in the classpath.
+If not, Java source code for the proxy class is generated, 
+and then compiled using <code>javax.tools.JavaCompiler</code> (Java 6) 
+or <code>com.sun.tools.javac.Main</code> (Java 5). This does have a few limitations:
+private classes, non-static inner classes, and anonymous inner classes are not supported.
+Also, classes without public constructors are not supported. Most of those limitations do not
+apply when using Cglib and Objenesis however.
 </p>
 
 <h2 id="AnonymousClass">Anonymous Class</h2> 
@@ -157,21 +170,42 @@ new AssertThrows(NumberFormatException.class) { public void test() {
 }};
 </pre>
 <p>
+You may also test for a specific exception message using:
+</p>
+<pre>
+new AssertThrows(new NumberFormatException("For input string: \"x\"")) {
+    public void test() {
+        Integer.parseInt("x");
+}};
+</pre>
+<p>
 Please note you need to add the following import statement:
 </p>
 <pre>
 import static org.junit.contrib.assertthrows.AssertThrows;
 </pre>
 
-<h2 id="FuturePlans">Future Plans</h2> 
+<h2 id="Dependencies">Dependencies</h2>
 <p>
-The current feature set is still relatively limited.
-The current plans for future releases are:
-<ul><li>Verify exception messages.
-</li><li>Generate bytecode for class proxies directly.
-</li><li>Support class proxies without constructor, possibly using tricks such as <code>sun.misc.Unsafe</code> (patches are welcome).
-</li></ul>
+This project does not required additional libraries. However, if you want to
+test using class proxies, it is suggested to add the libraries Cglib and Objenesis to the classpath.
+Please note those are optional dependencies only; within the described limitations, this tool works without them.
+When using Maven, use:
 </p>
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;cglib&lt;/groupId&gt;
+    &lt;artifactId&gt;cglib-nodep&lt;/artifactId&gt;
+    &lt;version&gt;2.2.2&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.objenesis&lt;/groupId&gt;
+    &lt;artifactId&gt;objenesis&lt;/artifactId&gt;
+    &lt;version&gt;1.2&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</pre>
 
 </body>
 </html>
