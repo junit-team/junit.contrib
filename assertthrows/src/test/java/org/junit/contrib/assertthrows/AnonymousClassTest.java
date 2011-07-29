@@ -105,6 +105,53 @@ public class AnonymousClassTest {
             assertEquals(IndexOutOfBoundsException.class.getName(),
                     e.getCause().getClass().getName());
         }
+        try {
+            new AssertThrows(new IndexOutOfBoundsException()) {
+                public void test() {
+                    list.get(0);
+                }
+            };
+            fail();
+        } catch (AssertionError e) {
+            assertEquals("Expected exception message <null>, but got <Index: 0, Size: 0>",
+                    e.getMessage());
+            assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
+        }
+        try {
+            new AssertThrows(new Exception("Index: 0, Size: 0")) {
+                public void test() {
+                    list.get(0);
+                }
+            };
+            fail();
+        } catch (AssertionError e) {
+            assertEquals("Expected an exception of type\n" +
+                    "Exception to be thrown,\n" +
+                    "but the method threw an exception of type\n" +
+                    "IndexOutOfBoundsException " +
+                    "(see in the 'Caused by' for the exception that was thrown)",
+                    e.getMessage());
+            assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
+        }
+    }
+
+    @Test
+    public void testWrongUsage() {
+        final List<String> list = new ArrayList<String>();
+        new AssertThrows(new NullPointerException(
+                "The passed exception class is null")) {
+            public void test() {
+                new AssertThrows((Class<Exception>) null) { public void test() {
+                    list.get(0);
+                }};
+        }};
+        new AssertThrows(new NullPointerException(
+                "The passed exception is null")) {
+            public void test() {
+                new AssertThrows((Exception) null) { public void test() {
+                    list.get(0);
+                }};
+        }};
     }
 
 }

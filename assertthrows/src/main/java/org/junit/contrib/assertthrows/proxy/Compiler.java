@@ -78,14 +78,12 @@ public class Compiler {
 
     /**
      * Set the source code for the specified class.
-     * This will reset all compiled classes.
      *
      * @param className the class name
      * @param source the source code
      */
     public void setSource(String className, String source) {
         sources.put(className, source);
-        compiled.clear();
     }
 
     /**

@@ -16,7 +16,11 @@
  */
 package org.junit.contrib.assertthrows.verify;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import org.junit.contrib.assertthrows.proxy.ProxyFactory;
+import org.junit.contrib.assertthrows.proxy.ReflectionUtils;
 
 /**
  * A result verifier that checks against an expected exception class.
@@ -26,21 +30,90 @@ import java.lang.reflect.Method;
 public class ExceptionVerifier implements ResultVerifier {
 
     private final Class<? extends Exception> expectedExceptionClass;
-    private final String expectedMessage;
+    private final Exception expectedException;
 
     /**
-     * Create a new verifier that checks against the given class (or any of it's
-     * subclasses), or doesn't check the exception class at all (if the passed
-     * class is null).
-     *
-     * @param expectedExceptionClass the expected exception base class, or null
-     * @param expectedMessage the expected message, or null
+     * Create a new verifier that only checks if an exception or error was thrown.
      */
-    public ExceptionVerifier(
-            Class<? extends Exception> expectedExceptionClass,
-            String expectedMessage) {
+    public ExceptionVerifier() {
+        this.expectedExceptionClass = null;
+        this.expectedException = null;
+    }
+
+    /**
+     * Create a new verifier that checks against a given exception class, or any
+     * of it's subclasses.
+     *
+     * @param expectedExceptionClass the expected exception base class (may not
+     *            be null)
+     */
+    public ExceptionVerifier(Class<? extends Exception> expectedExceptionClass) {
+        if (expectedExceptionClass == null) {
+            throw new NullPointerException("The passed exception class is null");
+        }
         this.expectedExceptionClass = expectedExceptionClass;
-        this.expectedMessage = expectedMessage;
+        this.expectedException = null;
+    }
+
+    /**
+     * Create a new verifier that checks against a given exception class for an
+     * exact match, plus additionally checks the message.
+     *
+     * @param expectedException the expected exception (may not be null)
+     */
+    public ExceptionVerifier(Exception expectedException) {
+        if (expectedException == null) {
+            throw new NullPointerException("The passed exception is null");
+        }
+        this.expectedExceptionClass = expectedException.getClass();
+        if (expectedExceptionClass == null) {
+            // overcareful
+            throw new NullPointerException("The passed exception class is null");
+        }
+        this.expectedException = expectedException;
+    }
+
+    /**
+     * Create a verifying proxy for the given object. It is usually not required
+     * to use this method in a test directly, except to extend this facility to
+     * do something new, such as repeat a test until it works.
+     *
+     * @param <T> the class of the object
+     * @param verifier the result verifier to call after each method call
+     * @param obj the object to wrap
+     * @return a proxy for the object
+     * @throws IllegalArgumentException if it was not possible to create a proxy
+     *             for the passed object
+     */
+    public static <T> T createVerifyingProxy(final ResultVerifier verifier, final T obj) {
+        if (obj == null) {
+            throw new NullPointerException("The passed object is null");
+        }
+        InvocationHandler handler = new InvocationHandler() {
+            private Exception called = new Exception("No method was called on " + obj);
+            public void finalize() {
+                if (called != null) {
+                    called.printStackTrace(System.err);
+                }
+            }
+            public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+                called = null;
+                while (true) {
+                    Object ret = null;
+                    Throwable thrown = null;
+                    try {
+                        ret = method.invoke(obj, args);
+                    } catch (InvocationTargetException e) {
+                        thrown = e.getTargetException();
+                    }
+                    if (!verifier.verify(ret, thrown, method, args)) {
+                        return ReflectionUtils.getDefaultValue(method.getReturnType());
+                    }
+                }
+            }
+        };
+        ProxyFactory factory = ProxyFactory.getFactory(obj.getClass());
+        return factory.createProxy(obj, handler);
     }
 
     public boolean verify(Object returnValue, Throwable t, Method m, Object... args) {
@@ -51,25 +124,35 @@ public class ExceptionVerifier implements ResultVerifier {
                 return false;
             } else if (expectedExceptionClass.isAssignableFrom(t.getClass())) {
                 // matching expected class
-                if (expectedMessage == null) {
-                    // don't verify the message
+                if (expectedException == null) {
+                    // don't verify the exception itself
                     return false;
                 }
-                if (expectedMessage.equals(t.getMessage())) {
-                    return false;
+                // the exception class must match exactly
+                if (expectedException.getClass().equals(t.getClass())) {
+                    String expectedMsg = expectedException.getMessage();
+                    String msg = t.getMessage();
+                    if (expectedMsg == null) {
+                        if (msg == null) {
+                            // both messages are null
+                            return false;
+                        }
+                    } else if (expectedMsg.equals(msg)) {
+                        // messages match
+                        return false;
+                    }
+                    String message =  "Expected exception message <" + expectedMsg +
+                            ">, but got <" + msg + ">";
+                    throw buildAssertionError(message, t);
                 }
-                throw new AssertionError(
-                        "Expected message:\n" + expectedMessage + "\n" +
-                        "but was: " + t.getMessage());
             }
         }
-        String expected;
+        String type;
         if (expectedExceptionClass == null) {
-            expected = "Expected an exception to be thrown,\n";
+            type = "";
         } else {
-            expected = "Expected an exception of type\n" +
-                    expectedExceptionClass.getSimpleName() +
-                    " to be thrown,\n";
+            type = " of type\n" +
+                expectedExceptionClass.getSimpleName();
         }
         String but;
         if (m == null) {
@@ -89,11 +172,18 @@ public class ExceptionVerifier implements ResultVerifier {
             t.getClass().getSimpleName() +
             " (see in the 'Caused by' for the exception that was thrown)";
         }
-        AssertionError ae = new AssertionError(expected + but + result);
-        if (t != null) {
-            ae.initCause(t);
+        String message =
+            "Expected an exception" + type + " to be thrown,\n" +
+            but + result;
+        throw buildAssertionError(message, t);
+    }
+
+    private AssertionError buildAssertionError(String message, Throwable got) {
+        AssertionError ae = new AssertionError(message);
+        if (got != null) {
+            ae.initCause(got);
         }
-        throw ae;
+        return ae;
     }
 
     /**

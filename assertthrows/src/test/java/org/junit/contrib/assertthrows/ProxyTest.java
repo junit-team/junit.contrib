@@ -32,7 +32,7 @@ public class ProxyTest {
 
     @Test
     public void testExpectedException() {
-        final List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<String>();
         assertThrows(list).get(0);
     }
 
@@ -40,44 +40,94 @@ public class ProxyTest {
     public void testExpectedExceptionClass() {
         final List<String> list = new ArrayList<String>();
         assertThrows(IndexOutOfBoundsException.class, list).get(0);
+        assertThrows(Exception.class, list).get(0);
+    }
+
+    @Test
+    public void testExpectedExceptionAsObject() {
+        final List<String> list = new ArrayList<String>();
+        assertThrows(
+                new IndexOutOfBoundsException("Index: 0, Size: 0"), list).
+                get(0);
     }
 
     @Test
     public void testDetectNoExceptionWasThrown() {
         final List<String> list = new ArrayList<String>();
-        try {
+        Throwable e;
+
+        e = new AssertThrows() { public void test() {
             assertThrows(list).size();
-        } catch (AssertionError e) {
-            assertEquals("Expected an exception to be thrown,\n" +
-                    "but the method size() returned 0",
-                    e.getMessage());
-            assertNull(e.getCause());
-        }
-        try {
+        }}.getLastThrown();
+        assertEquals("Expected an exception to be thrown,\n" +
+                "but the method size() returned 0",
+                e.getMessage());
+        assertNull(e.getCause());
+
+        e = new AssertThrows() { public void test() {
             assertThrows(NullPointerException.class, list).size();
-        } catch (AssertionError e) {
-            assertEquals("Expected an exception of type\n" +
-                    "NullPointerException to be thrown,\n" +
-                    "but the method size() returned 0",
-                    e.getMessage());
-            assertNull(e.getCause());
-        }
+        }}.getLastThrown();
+        assertEquals("Expected an exception of type\n" +
+                "NullPointerException to be thrown,\n" +
+                "but the method size() returned 0",
+                e.getMessage());
+        assertNull(e.getCause());
     }
 
     @Test
     public void testWrongException() {
         final List<String> list = new ArrayList<String>();
-        try {
+        Throwable e;
+
+        e = new AssertThrows() { public void test() {
             assertThrows(NullPointerException.class, list).get(0);
-        } catch (AssertionError e) {
-            assertEquals("Expected an exception of type\n" +
-                    "NullPointerException to be thrown,\n" +
-                    "but the method get(0) threw an exception of type\n" +
-                    "IndexOutOfBoundsException " +
-                    "(see in the 'Caused by' for the exception that was thrown)",
-                    e.getMessage());
-            assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
-        }
+        }}.getLastThrown();
+        assertEquals("Expected an exception of type\n" +
+                "NullPointerException to be thrown,\n" +
+                "but the method get(0) threw an exception of type\n" +
+                "IndexOutOfBoundsException " +
+                "(see in the 'Caused by' for the exception that was thrown)",
+                e.getMessage());
+        assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
+
+        e = new AssertThrows() { public void test() {
+            assertThrows(new IndexOutOfBoundsException(), list).get(0);
+        }}.getLastThrown();
+        assertEquals("Expected exception message <null>, but got <Index: 0, Size: 0>",
+                e.getMessage());
+        assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
+
+        e = new AssertThrows() { public void test() {
+            assertThrows(new Exception("Index: 0, Size: 0"), list).get(0);
+        }}.getLastThrown();
+        assertEquals("Expected an exception of type\n" +
+                "Exception to be thrown,\n" +
+                "but the method get(0) threw an exception of type\n" +
+                "IndexOutOfBoundsException " +
+                "(see in the 'Caused by' for the exception that was thrown)",
+                e.getMessage());
+        assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
+    }
+
+    @Test
+    public void testWrongUsage() {
+        final List<String> list = new ArrayList<String>();
+        Throwable e;
+
+        e = new AssertThrows() { public void test() {
+            assertThrows((List<String>) null).get(0);
+        }}.getLastThrown();
+        assertEquals("The passed object is null", e.getMessage());
+
+        e = new AssertThrows() { public void test() {
+            assertThrows((Class<Exception>) null, list).get(0);
+        }}.getLastThrown();
+        assertEquals("The passed exception class is null", e.getMessage());
+
+        e = new AssertThrows() { public void test() {
+            assertThrows((Exception) null, list).get(0);
+        }}.getLastThrown();
+        assertEquals("The passed exception is null", e.getMessage());
     }
 
     @Test

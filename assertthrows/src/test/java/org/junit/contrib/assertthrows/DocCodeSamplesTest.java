@@ -19,6 +19,7 @@ package org.junit.contrib.assertthrows;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
 
@@ -75,6 +76,10 @@ public class DocCodeSamplesTest {
             public void test() {
                 Integer.parseInt("x");
         }};
+        Throwable t = new AssertThrows() { public void test() {
+            Integer.parseInt("x");
+        }}.getLastThrown();
+        assertEquals("For input string: \"x\"", t.getMessage());
     }
 
 }

@@ -147,7 +147,7 @@ public class CglibProxyFactory extends ProxyFactory {
     }
 
     /**
-     * An tool to create new objects, if possible without calling any constructors.
+     * A tool to create new objects, if possible without calling any constructors.
      */
     interface ObjectCreator {
         Object newInstance(Class<?> c) throws Exception;

@@ -16,11 +16,7 @@
  */
 package org.junit.contrib.assertthrows;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.junit.contrib.assertthrows.proxy.ProxyFactory;
-import org.junit.contrib.assertthrows.proxy.ReflectionUtils;
 import org.junit.contrib.assertthrows.verify.ExceptionVerifier;
 import org.junit.contrib.assertthrows.verify.ResultVerifier;
 
@@ -32,46 +28,55 @@ import org.junit.contrib.assertthrows.verify.ResultVerifier;
 public abstract class AssertThrows {
 
     private final ResultVerifier verifier;
+    private Throwable lastThrown;
 
     /**
-     * Create a new AssertThrows object, and call the test method to verify the
-     * expected exception is thrown.
-     *
-     * @param expectedExceptionClass the expected exception class
-     */
-    public AssertThrows(Class<? extends Exception> expectedExceptionClass) {
-        this(new ExceptionVerifier(expectedExceptionClass, null));
-    }
-
-    /**
-     * Create a new AssertThrows object, and call the test method to verify the
-     * expected exception is thrown.
-     *
-     * @param expectedException the expected exception
-     */
-    public AssertThrows(Exception expectedException) {
-        this(expectedException == null ?
-                new ExceptionVerifier(null, null) :
-                new ExceptionVerifier(
-                        expectedException.getClass(),
-                        expectedException.getMessage()));
-    }
-
-    /**
-     * Create a new AssertThrows object, and call the test method to verify an
-     * exception or error is thrown. That means for a successful result, the
-     * test() method must throw any kind of Exception or Error (AssertionError,
-     * StackOverflowError, and so on).
+     * Create a new <code>AssertThrows</code> object, and call the test method
+     * to verify an exception or error is thrown.
+     * <p>
+     * For the test to pass, the <code>test()</code> method must throw any kind
+     * of <code>Exception</code> or <code>Error</code> (
+     * <code>AssertionError</code>, <code>StackOverflowError</code>, and so on).
      */
     public AssertThrows() {
-        this(new ExceptionVerifier(null, null));
+        this(new ExceptionVerifier());
     }
 
     /**
-     * Create a new AssertThrows object, and call the test method as many times
-     * as the result verifier requests. It is usually not required to use this
-     * constructor, except to extend this facility to do something new, such as
-     * repeat a test until it works.
+     * Create a new <code>AssertThrows</code> object, and call the test method
+     * to verify the expected exception is thrown.
+     * <p>
+     * For the test to pass, the class of the thrown exception must match the
+     * expected exception, or it must be a subclass of the expected exception.
+     *
+     * @param expectedExceptionClass the expected exception class (must not be
+     *            null)
+     */
+    public AssertThrows(Class<? extends Exception> expectedExceptionClass) {
+        this(new ExceptionVerifier(expectedExceptionClass));
+    }
+
+    /**
+     * Create a new <code>AssertThrows</code> object, and call the test method
+     * to verify the expected exception is thrown.
+     * <p>
+     * For the test to pass, the exception class must match exactly, and the message
+     * must match exactly. If the message of the expected exception is null, then
+     * the message of the thrown exception must also be null.
+     *
+     * @param expectedException the expected exception (must not be null)
+     */
+    public AssertThrows(Exception expectedException) {
+        this(new ExceptionVerifier(expectedException));
+    }
+
+    /**
+     * Create a new <code>AssertThrows</code> object, and call the test method
+     * as many times as the result verifier requests.
+     * <p>
+     * This constructor is usually not required within unit tests, except to
+     * extend this facility to do something new, such as repeat a test until it
+     * works.
      */
     protected AssertThrows(ResultVerifier verifier) {
         this.verifier = verifier;
@@ -84,61 +89,69 @@ public abstract class AssertThrows {
      */
     protected void verify() {
         while (true) {
+            lastThrown = null;
             try {
                 test();
                 // can't call verifier.verify here, because it can
                 // throw an exception itself (which must not  be caught)
             } catch (Throwable e) {
-                if (verifier.verify(null, e, null)) {
-                    continue;
-                }
-                break;
+                lastThrown = e;
             }
-            if (verifier.verify(null, null, null)) {
-                continue;
+            if (!verifier.verify(null, lastThrown, null)) {
+                return;
             }
-            break;
         }
     }
 
     /**
-     * Verify that the next method call on the object throws an exception.
+     * Verify that the next method call on the returned object throws an exception.
+     * <p>
+     * For the test to pass, the method must throw any kind
+     * of <code>Exception</code> or <code>Error</code> (
+     * <code>AssertionError</code>, <code>StackOverflowError</code>, and so on).
      *
      * @param <T> the class of the object
-     * @param obj the object to wrap
+     * @param obj the object to wrap (must not be null)
      * @return a proxy for the object
      */
     public static <T> T assertThrows(T obj) {
-        return createVerifyingProxy(new ExceptionVerifier(null, null), obj);
+        return ExceptionVerifier.createVerifyingProxy(
+                new ExceptionVerifier(), obj);
     }
 
     /**
-     * Verify that the next method call on the object throws the expected
+     * Verify that the next method call on the returned object throws the expected
      * exception.
+     * <p>
+     * For the test to pass, the class of the thrown exception must match the
+     * expected exception, or it must be a subclass of the expected exception.
      *
      * @param <T> the class of the object
-     * @param expectedExceptionClass the expected exception class to be thrown
-     * @param obj the object to wrap
+     * @param expectedExceptionClass the expected exception class (must not be null)
+     * @param obj the object to wrap (must not be null)
      * @return a proxy for the object
      */
     public static <T> T assertThrows(Class<? extends Exception> expectedExceptionClass, T obj) {
-        return createVerifyingProxy(new ExceptionVerifier(expectedExceptionClass, null), obj);
+        return ExceptionVerifier.createVerifyingProxy(
+                new ExceptionVerifier(expectedExceptionClass), obj);
     }
 
     /**
      * Verify that the next method call on the object throws the expected
      * exception.
+     * <p>
+     * For the test to pass, the exception class must match exactly, and the message
+     * must match exactly. If the message of the expected exception is null, then
+     * the message of the thrown exception must also be null.
      *
      * @param <T> the class of the object
-     * @param expectedException the expected exception
-     * @param obj the object to wrap
+     * @param expectedException the expected exception (must not be null)
+     * @param obj the object to wrap (must not be null)
      * @return a proxy for the object
      */
     public static <T> T assertThrows(Exception expectedException, T obj) {
-        return createVerifyingProxy(expectedException == null ?
-                new ExceptionVerifier(null, null) :
-                new ExceptionVerifier(expectedException.getClass(), expectedException.getMessage()),
-                obj);
+        return ExceptionVerifier.createVerifyingProxy(
+                new ExceptionVerifier(expectedException), obj);
     }
 
     /**
@@ -153,48 +166,20 @@ public abstract class AssertThrows {
     }
 
     /**
-     * Create a verifying proxy for the given object. It is usually not required
-     * to use this method in a test directly, except to extend this facility to
-     * do something new, such as repeat a test until it works.
-     *
-     * @param <T> the class of the object
-     * @param verifier the result verifier to call after each method call
-     * @param obj the object to wrap
-     * @return a proxy for the object
-     * @throws IllegalArgumentException if it was not possible to create a proxy
-     *             for the passed object
-     */
-    protected static <T> T createVerifyingProxy(final ResultVerifier verifier, final T obj) {
-        InvocationHandler handler = new InvocationHandler() {
-            private Exception called = new Exception("No method was called on " + obj);
-            public void finalize() {
-                if (called != null) {
-                    called.printStackTrace(System.err);
-                }
-            }
-            public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
-                try {
-                    called = null;
-                    Object ret;
-                    do {
-                        ret = method.invoke(obj, args);
-                    } while (verifier.verify(ret, null, method, args));
-                    return ret;
-                } catch (InvocationTargetException e) {
-                    verifier.verify(null, e.getTargetException(), method, args);
-                    return ReflectionUtils.getDefaultValue(method.getReturnType());
-                }
-            }
-        };
-        ProxyFactory factory = ProxyFactory.getFactory(obj.getClass());
-        return factory.createProxy(obj, handler);
-    }
-
-    /**
      * The test method that is called.
      *
      * @throws Exception the expected exception
      */
     public abstract void test() throws Exception;
+
+    /**
+     * Get the last exception or error (if any) that was thrown by the method
+     * <code>test()</code>.
+     *
+     * @return the last thrown exception or error, or null
+     */
+    public Throwable getLastThrown() {
+        return lastThrown;
+    }
 
 }

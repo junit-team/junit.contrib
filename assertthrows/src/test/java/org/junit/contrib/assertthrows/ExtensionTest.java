@@ -21,8 +21,8 @@ import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.contrib.assertthrows.proxy.ProxyFactory;
+import org.junit.contrib.assertthrows.verify.ExceptionVerifier;
 import org.junit.contrib.assertthrows.verify.ResultVerifier;
 
 /**
@@ -37,33 +37,37 @@ public class ExtensionTest {
 
     @Test
     public void testAnonymousClass() {
-        new AssertEventuallyWorks() { public void test() {
+        new AssertEventuallySucceeds() { public void test() {
             assertTrue(random.nextDouble() > 0.9);
         }};
-        try {
-            new AssertEventuallyWorks() { public void test() {
+
+        Throwable e = new AssertThrows() { public void test() {
+            new AssertEventuallySucceeds() { public void test() {
                 assertTrue(random.nextInt(10) == 10);
             }};
-            fail();
-        } catch (AssertionError e) {
-            assertEquals("Verification failed after 100 tries", e.getMessage());
-        }
+        }}.getLastThrown();
+        assertEquals("Verification failed after 100 tries", e.getMessage());
     }
 
     @Test
     public void testProxy() {
         ProxyFactory.useClassProxyFactory(Random.class);
         assertEventuallyEquals(10, random).nextInt(20);
-        try {
+        assertEventuallySucceeds(this).failWithProbability(0.9);
+
+        Throwable e;
+        e = new AssertThrows() { public void test() {
             assertEventuallyEquals(20, random).nextInt(10);
-            fail();
-        } catch (AssertionError e) {
-            assertEquals("Verification failed after 100 tries", e.getMessage());
-        }
+        }}.getLastThrown();
+        assertEquals("Verification failed after 100 tries", e.getMessage());
+        e = new AssertThrows() { public void test() {
+            assertEventuallySucceeds(ExtensionTest.this).failWithProbability(1.0);
+        }}.getLastThrown();
+        assertEquals("Verification failed after 100 tries", e.getMessage());
     }
 
-    private <T> T assertEventuallyEquals(final Object expected, T obj) {
-        return AssertThrows.createVerifyingProxy(new ResultVerifier() {
+    <T> T assertEventuallyEquals(final Object expected, T obj) {
+        return ExceptionVerifier.createVerifyingProxy(new ResultVerifier() {
 
             private int count;
 
@@ -84,39 +88,50 @@ public class ExtensionTest {
         }, obj);
     }
 
+    <T> T assertEventuallySucceeds(T obj) {
+        return ExceptionVerifier.createVerifyingProxy(
+                new SucceedsEventuallyVerifier(), obj);
+    }
+
+    public void failWithProbability(double probability) {
+        if (random.nextDouble() < probability) {
+            throw new IllegalStateException();
+        }
+    }
+
 }
 
 /**
  * Verify that a given test is successful after at most 100 tries.
  */
-abstract class AssertEventuallyWorks extends AssertThrows {
+abstract class AssertEventuallySucceeds extends AssertThrows {
+
+    AssertEventuallySucceeds() {
+        super(new SucceedsEventuallyVerifier());
+    }
+
+}
+
+/**
+ * Verifies that a no exception was thrown after at most 100 tries.
+ */
+class SucceedsEventuallyVerifier implements ResultVerifier {
 
     static final int MAX_TRIES = 100;
 
-    AssertEventuallyWorks() {
-        super(new WorksEventuallyVerifier());
-    }
+    private int count;
 
-    /**
-     * Verifies that a no exception was thrown after at most 100 tries.
-     */
-    static class WorksEventuallyVerifier implements ResultVerifier {
-
-        private int count;
-
-        public boolean verify(Object returnValue, Throwable t, Method m, Object... args) {
-            if (t == null) {
-                return false;
-            }
-            if (count++ < 100) {
-                return true;
-            }
-            AssertionError ae = new AssertionError(
-                    "Verification failed after " + MAX_TRIES + " tries");
-            ae.initCause(t);
-            throw ae;
+    public boolean verify(Object returnValue, Throwable t, Method m, Object... args) {
+        if (t == null) {
+            return false;
         }
-
+        if (count++ < 100) {
+            return true;
+        }
+        AssertionError ae = new AssertionError(
+                "Verification failed after " + MAX_TRIES + " tries");
+        ae.initCause(t);
+        throw ae;
     }
 
 }

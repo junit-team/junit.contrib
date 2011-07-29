@@ -30,6 +30,12 @@ Thomas Mueller
 
 <hr/>
 
+<p>
+<span  style="border: solid 1px; padding: 4px;">
+This is an alpha release. The package names, API, and features may change in a future release.
+</span>
+</p>
+
 <h2>Contents</h2>
 
 <ul><li><a href="#TheProblem">The Problem</a>
@@ -178,6 +184,16 @@ new AssertThrows(new NumberFormatException("For input string: \"x\"")) {
     public void test() {
         Integer.parseInt("x");
 }};
+</pre>
+<p>
+If you need to verify the exception message in more detail 
+(for example, match against a pattern, or verify the cause),
+you can get the last exception or error:
+</p>
+<pre>
+Throwable t = new AssertThrows() { public void test() {
+        Integer.parseInt("x");
+}}.getThrowable();
 </pre>
 <p>
 Please note you need to add the following import statement:
