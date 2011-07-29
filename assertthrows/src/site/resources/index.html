@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head><meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>
+JUnit Contrib - AssertThrows
+</title>
+<style>
+body { 
+    font: 13px/1.4 Arial, sans-serif;
+}
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+pre {
+    background-color: #eee;
+    padding: 6px;
+}
+</style>
+</head>
+<body>
+<h1>
+<span style="color: #33ff33">J</span><span style="color: #cc0000">U</span>nit Contrib -
+AssertThrows</h1>
+<p>
+Thomas Mueller
+</p>
+
+<hr/>
+
+<p>
+<span  style="border: solid 1px; padding: 4px;">
+This is an alpha release. The package names, API, and features may change in a future release.
+</span>
+</p>
+
+<h2>Contents</h2>
+
+<ul><li><a href="#TheProblem">The Problem</a>
+</li><li><a href="#Annotation">Annotation</a>
+</li><li><a href="#TryFailCatch">Try-Fail-Catch</a>
+</li><li><a href="#Proxy">Proxy</a>
+</li><li><a href="#AnonymousClass">Anonymous Class</a>
+</li><li><a href="#Dependencies">Dependencies</a>
+</li><li><a href="#KnownProblems">Known Problems</a>
+</li></ul>
+
+<h2 id="TheProblem">The Problem</h2>
+<p>
+Traditionally, there are two ways to verify that code throws exceptions as expected: using an 
+<a href="#Annotation">annotation</a>, and using <a href="#TryFailCatch">try-fail-catch</a>.
+However both are more complex than using <code>assertTrue</code> or <code>assertEquals</code>.
+This project offers two additional, sometimes simpler ways to test for exceptions: using
+<a href="#Proxy">assertThrows()</a> and using
+<a href="#AnonymousClass">new AssertThrows()</a>.
+</p>
+
+<h2 id="Annotation">Annotation</h2>
+<p>
+If the test method itself is expected to throw an <code>IndexOutOfBoundsException</code>,
+use the following annotation
+<a href="http://junit.sourceforge.net/doc/faq/faq.htm#tests_7">as described in JUnit FAQ</a>:
+</p>
+<pre>
+@Test(expected=IndexOutOfBoundsException.class)
+public void testIndexOutOfBoundsException() {
+    List&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
+    emptyList.get(0);
+}
+</pre>
+
+<h2 id="TryFailCatch">Try-Fail-Catch</h2> 
+<p>
+If the test is more complex and doesn't end where the exception is expected, you could write:
+</p>
+<pre>
+List&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
+try {
+    emptyList.get(0);
+    fail();
+} catch (IndexOutOfBoundsException e) {
+    // expected
+}
+</pre>
+<p>
+This will allow you to verify the exception message as well. 
+However, it is very easy to forget the <code>fail()</code>.
+</p>
+
+<h2 id="Proxy">Proxy</h2> 
+<p>
+In many cases, this project allows you to simplify such tests to:
+</p>
+<pre>
+List&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
+assertThrows(emptyList).get(0);
+</pre>
+<p>
+Please note the somewhat unusual order of brackets.
+To verify the correct exception is thrown, use:
+</p>
+<pre>
+assertThrows(IndexOutOfBoundsException.class, emptyList).get(0);
+</pre>
+<p>
+To verify the exception message as well, use:
+</p>
+<pre>
+assertThrows(new IndexOutOfBoundsException(
+    "Index: 0, Size: 0"), emptyList).
+    get(0);
+</pre>
+<p>
+Please note you need to add the following static import statement:
+</p>
+<pre>
+import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
+</pre>
+<p>
+Internally, the <code>assertThrows</code> creates a proxy for the <code>emptyList</code> object,
+which verifies all method calls to this object throw an exception.
+</p>
+<h3>Limitations and Class Proxies</h3>
+<p>
+Static methods and constructors can't be tested in this way.
+This solution works best with interfaces (as in this example the <code>List</code> interface).
+By default, <code>assertThrows</code> will try to create a proxy 
+using the <code>java.lang.reflect.Proxy</code> mechanism.
+For classes that do not implement an interface, and to test methods that are not part of any interface,
+a class proxy is required (a proxy that extends a class, and not just implements interfaces).
+Because this is tricky, <code>assertThrows</code> doesn't do that by default.
+To explicitly use a class proxy, use <code>AssertThrows.useClassProxy</code>.
+As an example, if you declare the <code>emptyList</code> as an instance 
+of the concrete class <code>ArrayList</code>, you need to tell the tool to use a class proxy:
+</p>
+<pre>
+ArrayList&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
+AssertThrows.useClassProxy(ArrayList.class);
+assertThrows(emptyList).get(0);
+</pre>
+<p>
+Once such a class proxy is created, it is used for all future <code>assertThrows</code> calls
+where the provided object is of exactly this class.
+Creating a proxy that extends a class is a bit challenging.
+It is not possibly to create a proxy for a final class, because extending a final class is not allowed.
+Also, final methods can not be overridden.
+To create class proxies, the proxy factory uses the libraries
+<a href="http://cglib.sourceforge.net/">Cglib</a> and 
+<a href="http://code.google.com/p/objenesis/">Objenesis</a> if they are in the classpath.
+If not, Java source code for the proxy class is generated, 
+and then compiled using <code>javax.tools.JavaCompiler</code> (Java 6) 
+or <code>com.sun.tools.javac.Main</code> (Java 5). This does have a few limitations:
+private classes, non-static inner classes, and anonymous inner classes are not supported.
+Also, classes without public constructors are not supported. Most of those limitations do not
+apply when using Cglib and Objenesis however.
+</p>
+
+<h2 id="AnonymousClass">Anonymous Class</h2> 
+<p>
+The following syntax is supported:
+</p>
+<pre>
+new AssertThrows() { public void test() {
+    Integer.parseInt("x");
+}};
+</pre>
+<p>
+The constructor of this class calls <code>test()</code> 
+and verifies it throws an exception.
+To test for a specific exception, use:
+</p>
+<pre>
+new AssertThrows(NumberFormatException.class) { public void test() {
+    Integer.parseInt("x");
+}};
+</pre>
+<p>
+You may also test for a specific exception message using:
+</p>
+<pre>
+new AssertThrows(new NumberFormatException("For input string: \"x\"")) {
+    public void test() {
+        Integer.parseInt("x");
+}};
+</pre>
+<p>
+If you need to verify the exception message in more detail 
+(for example, match against a pattern, or verify the cause),
+you can get the last exception or error:
+</p>
+<pre>
+Throwable t = new AssertThrows() { public void test() {
+        Integer.parseInt("x");
+}}.getThrowable();
+</pre>
+<p>
+Please note you need to add the following import statement:
+</p>
+<pre>
+import static org.junit.contrib.assertthrows.AssertThrows;
+</pre>
+
+<h2 id="Dependencies">Dependencies</h2>
+<p>
+This project does not required additional libraries. However, if you want to
+test using class proxies, it is suggested to add the libraries Cglib and Objenesis to the classpath.
+Please note those are optional dependencies only; within the described limitations, this tool works without them.
+When using Maven, use:
+</p>
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;cglib&lt;/groupId&gt;
+    &lt;artifactId&gt;cglib-nodep&lt;/artifactId&gt;
+    &lt;version&gt;2.2.2&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.objenesis&lt;/groupId&gt;
+    &lt;artifactId&gt;objenesis&lt;/artifactId&gt;
+    &lt;version&gt;1.2&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</pre>
+
+<h2 id="KnownProblems">Known Problems</h2>
+<p>
+There are classpath problems when using Maven 2.x. together with the the compiling proxy factory.
+If the compiling proxy factory is required, you will need to use Maven 3.x.
+</p>
+
+</body>
+</html>
