@@ -117,6 +117,8 @@ public class ExceptionVerifier implements ResultVerifier {
     }
 
     public boolean verify(Object returnValue, Throwable t, Method m, Object... args) {
+        // TODO the exception could possibly be stored in a ThreadLocal,
+        // so it can be requested later on
         if (t != null) {
             // the method did throw an exception
             if (expectedExceptionClass == null) {

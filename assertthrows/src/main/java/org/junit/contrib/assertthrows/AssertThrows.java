@@ -21,7 +21,19 @@ import org.junit.contrib.assertthrows.verify.ExceptionVerifier;
 import org.junit.contrib.assertthrows.verify.ResultVerifier;
 
 /**
- * A facility to test for exceptions.
+ * A facility to test for exceptions. There are two ways to use this class:
+ * proxy testing and testing using an anonymous class. For proxy testing,
+ * use one of the static <code>assertThrows</code> methods:
+ * <pre>
+ * List&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
+ * assertThrows(emptyList).get(0);
+ * </pre>
+ * Or you may test using an anonymous class:
+ * <pre>
+ * new AssertThrows() { public void test() {
+ *     Integer.parseInt("x");
+ * }};
+ * </pre>
  *
  * @author Thomas Mueller
  */
@@ -31,23 +43,25 @@ public abstract class AssertThrows {
     private Throwable lastThrown;
 
     /**
-     * Create a new <code>AssertThrows</code> object, and call the test method
-     * to verify an exception or error is thrown.
+     * Verify an exception or error is thrown. Internally, the constructor calls
+     * {@link #verify}, which calls {@link #test} and verifies it throws an
+     * exception or error.
      * <p>
-     * For the test to pass, the <code>test()</code> method must throw any kind
-     * of <code>Exception</code> or <code>Error</code> (
-     * <code>AssertionError</code>, <code>StackOverflowError</code>, and so on).
+     * For the test to pass, the {@link #test} method must throw any kind of
+     * {@link Exception} or {@link Error} ( {@link AssertionError},
+     * {@link StackOverflowError}, and so on).
      */
     public AssertThrows() {
         this(new ExceptionVerifier());
     }
 
     /**
-     * Create a new <code>AssertThrows</code> object, and call the test method
-     * to verify the expected exception is thrown.
+     * Verify an exception of the given class or any subclass is thrown. This
+     * constructor is similar to {@link #AssertThrows()}, except that is also
+     * verifies the exception class.
      * <p>
      * For the test to pass, the class of the thrown exception must match the
-     * expected exception, or it must be a subclass of the expected exception.
+     * expected class, or it must be a subclass.
      *
      * @param expectedExceptionClass the expected exception class (must not be
      *            null)
@@ -57,12 +71,13 @@ public abstract class AssertThrows {
     }
 
     /**
-     * Create a new <code>AssertThrows</code> object, and call the test method
-     * to verify the expected exception is thrown.
+     * Verify this exact exception is thrown. This constructor is similar to
+     * {@link #AssertThrows()}, except that is also verifies the exception class
+     * and message.
      * <p>
-     * For the test to pass, the exception class must match exactly, and the message
-     * must match exactly. If the message of the expected exception is null, then
-     * the message of the thrown exception must also be null.
+     * For the test to pass, the exception class must match exactly, and the
+     * message must match exactly. If the message of the expected exception is
+     * null, then the message of the thrown exception must also be null.
      *
      * @param expectedException the expected exception (must not be null)
      */
@@ -71,8 +86,10 @@ public abstract class AssertThrows {
     }
 
     /**
-     * Create a new <code>AssertThrows</code> object, and call the test method
-     * as many times as the result verifier requests.
+     * Use the given verifier to verify the result. This constructor is similar
+     * to {@link #AssertThrows()}, except that is uses the given verifier. The
+     * {@link #test} method is called as many times as the result verifier
+     * requests.
      * <p>
      * This constructor is usually not required within unit tests, except to
      * extend this facility to do something new, such as repeat a test until it
@@ -84,8 +101,9 @@ public abstract class AssertThrows {
     }
 
     /**
-     * Run the <code>test()</code> method and verify it throws an exception.
-     * This method is called by the constructor.
+     * Call {@link #test} and verify it throws an exception. This method is
+     * called by the constructor automatically, so it is usually not required to
+     * call it manually.
      */
     protected void verify() {
         while (true) {
@@ -104,11 +122,12 @@ public abstract class AssertThrows {
     }
 
     /**
-     * Verify that the next method call on the returned object throws an exception.
+     * Verify that the next method call on the returned object throws an
+     * exception.
      * <p>
-     * For the test to pass, the method must throw any kind
-     * of <code>Exception</code> or <code>Error</code> (
-     * <code>AssertionError</code>, <code>StackOverflowError</code>, and so on).
+     * For the test to pass, the method must throw any kind of
+     * {@link Exception} or {@link Error} ( {@link AssertionError},
+     * {@link StackOverflowError}, and so on).
      *
      * @param <T> the class of the object
      * @param obj the object to wrap (must not be null)
@@ -120,14 +139,15 @@ public abstract class AssertThrows {
     }
 
     /**
-     * Verify that the next method call on the returned object throws the expected
-     * exception.
+     * Verify that the next method call on the returned object throws an
+     * exception of this type.
      * <p>
      * For the test to pass, the class of the thrown exception must match the
-     * expected exception, or it must be a subclass of the expected exception.
+     * expected class, or it must be a subclass.
      *
      * @param <T> the class of the object
-     * @param expectedExceptionClass the expected exception class (must not be null)
+     * @param expectedExceptionClass the expected exception class (must not be
+     *            null)
      * @param obj the object to wrap (must not be null)
      * @return a proxy for the object
      */
@@ -140,9 +160,9 @@ public abstract class AssertThrows {
      * Verify that the next method call on the object throws the expected
      * exception.
      * <p>
-     * For the test to pass, the exception class must match exactly, and the message
-     * must match exactly. If the message of the expected exception is null, then
-     * the message of the thrown exception must also be null.
+     * For the test to pass, the exception class must match exactly, and the
+     * message must match exactly. If the message of the expected exception is
+     * null, then the message of the thrown exception must also be null.
      *
      * @param <T> the class of the object
      * @param expectedException the expected exception (must not be null)
@@ -156,8 +176,9 @@ public abstract class AssertThrows {
 
     /**
      * Test using a class proxy for this class from now on, even if the class
-     * does implement an interface. This allows to test classes that don't
-     * implement an interface, and methods that are not part of any interface.
+     * does implement an interface. This allows to test methods that are not
+     * part of any interface, and to test classes that don't implement an
+     * interface.
      *
      * @param c the class
      */
@@ -166,15 +187,14 @@ public abstract class AssertThrows {
     }
 
     /**
-     * The test method that is called.
+     * The test method that is called. A subclass must implement this method.
      *
      * @throws Exception the expected exception
      */
     public abstract void test() throws Exception;
 
     /**
-     * Get the last exception or error (if any) that was thrown by the method
-     * <code>test()</code>.
+     * Get the last exception or error (if any) that was thrown.
      *
      * @return the last thrown exception or error, or null
      */
