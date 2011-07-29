@@ -106,13 +106,13 @@ public class CglibProxyFactory extends ProxyFactory {
         try {
             return creator.newInstance(c);
         } catch (Exception e) {
-            IllegalArgumentException iae = new IllegalArgumentException(
+            IllegalArgumentException ia = new IllegalArgumentException(
                     "Could not create a new proxy instance for the base class " +
                     baseClass.getName() +
                     (REFLECTION_OBJECT_CREATOR == creator ?
                     " (probably because objenesis is not used)" : ""));
-            iae.initCause(e);
-            throw iae;
+            ia.initCause(e);
+            throw ia;
         }
     }
 

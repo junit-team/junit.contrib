@@ -122,7 +122,7 @@ public class CompilingProxyFactoryTest {
     }
 
     @Test
-    public void testClassWithBrigeMethod() throws Exception {
+    public void testClassWithBridgeMethod() throws Exception {
         createProxy(new ClassWithBridgeMethod()).clone();
         assertEquals("clone = ClassWithBridgeMethod", buff.toString());
         // even bridge methods should be intercepted (there are two clone methods)

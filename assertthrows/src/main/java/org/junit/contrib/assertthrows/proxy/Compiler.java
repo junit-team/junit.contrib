@@ -173,7 +173,7 @@ public class Compiler {
             } catch (IOException e) {
                 throw e;
             } catch (Exception e) {
-                IOException io = new IOException("Error compling " +
+                IOException io = new IOException("Error compiling " +
                         javaFile.getAbsolutePath() + ": " + e.getMessage());
                 io.initCause(e);
                 throw io;

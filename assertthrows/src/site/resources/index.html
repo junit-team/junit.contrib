@@ -145,7 +145,7 @@ Once such a class proxy is created, it is used for all future <code>assertThrows
 where the provided object is of exactly this class.
 Creating a proxy that extends a class is a bit challenging.
 It is not possibly to create a proxy for a final class, because extending a final class is not allowed.
-Also, final methods can not be overriden.
+Also, final methods can not be overridden.
 To create class proxies, the proxy factory uses the libraries
 <a href="http://cglib.sourceforge.net/">Cglib</a> and 
 <a href="http://code.google.com/p/objenesis/">Objenesis</a> if they are in the classpath.

@@ -54,11 +54,11 @@ public class CompilingProxyFactory extends ProxyFactory {
             cons = pc.getConstructor(new Class<?>[] { InvocationHandler.class });
             return (T) cons.newInstance(new Object[] { handler });
         } catch (Exception e) {
-            IllegalArgumentException iae = new IllegalArgumentException(
+            IllegalArgumentException ia = new IllegalArgumentException(
                     "Could not create a new instance of the class " +
                     pc.getName());
-            iae.initCause(e);
-            throw iae;
+            ia.initCause(e);
+            throw ia;
         }
     }
 
@@ -98,8 +98,8 @@ public class CompilingProxyFactory extends ProxyFactory {
                         "is not supported: " + c.getName());
             }
             boolean hasPublicConstructor = false;
-            for (Constructor<?> constr : c.getConstructors()) {
-                if (Modifier.isPublic(constr.getModifiers())) {
+            for (Constructor<?> constructor : c.getConstructors()) {
+                if (Modifier.isPublic(constructor.getModifiers())) {
                     hasPublicConstructor = true;
                     break;
                 }
@@ -127,10 +127,10 @@ public class CompilingProxyFactory extends ProxyFactory {
             proxyMap.put(c, pc);
             return pc;
         } catch (ClassNotFoundException e) {
-            IllegalArgumentException iae = new IllegalArgumentException(
+            IllegalArgumentException ia = new IllegalArgumentException(
                     "Could not create a proxy class for " + c.getName());
-            iae.initCause(e);
-            throw iae;
+            ia.initCause(e);
+            throw ia;
         }
     }
 

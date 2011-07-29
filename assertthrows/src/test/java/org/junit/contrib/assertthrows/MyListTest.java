@@ -103,7 +103,7 @@ public class MyListTest {
         list.close();
         // closing multiple times is allowed
         list.close();
-        // everything else isn't
+        // everything else is not
         assertThrows(list).add("Kiwi");
         assertThrows(list).get(0);
         assertThrows(list).remove(0);
