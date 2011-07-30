@@ -72,10 +72,6 @@ public class ExceptionVerifier implements ResultVerifier {
             throw new NullPointerException("The passed exception is null");
         }
         this.expectedExceptionClass = expectedException.getClass();
-        if (expectedExceptionClass == null) {
-            // overcareful
-            throw new NullPointerException("The passed exception class is null");
-        }
         this.expectedException = expectedException;
     }
 
@@ -241,8 +237,9 @@ public class ExceptionVerifier implements ResultVerifier {
             this.verifier = verifier;
             this.obj = obj;
             this.called = new AssertionError(
-                    "A proxy for the class " + obj.getClass().getName() + " was created, " +
-                    "but then no overridable method was called on it. " +
+                    "A proxy for the class\n" +
+                    obj.getClass().getName() + "\n" +
+                    "was created, but then no overridable method was called on it.\n" +
                     "See the stack trace for where the proxy was created.");
         }
 
@@ -262,6 +259,8 @@ public class ExceptionVerifier implements ResultVerifier {
         }
         public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
             if ("finalize".equals(method.getName())) {
+                // we _could_ support this method, but then detecting
+                // that no method was called would no longer work
                 return method.invoke(obj, args);
             }
             called = null;

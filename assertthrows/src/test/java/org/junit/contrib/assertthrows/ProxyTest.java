@@ -18,6 +18,7 @@ package org.junit.contrib.assertthrows;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -49,6 +50,7 @@ public class ProxyTest {
     @Test
     public void testExpectedExceptionAsObject() {
         final List<String> list = new ArrayList<String>();
+        assertThrows(new NullPointerException(), list).addAll(null);
         assertThrows(
                 new IndexOutOfBoundsException("Index: 0, Size: 0"), list).
                 get(0);
@@ -105,12 +107,12 @@ public class ProxyTest {
         assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
 
         new AssertThrows() { public void test() {
-            assertThrows(new Exception("Index: 0, Size: 0"), list).get(0);
+            assertThrows(new Exception("Index: 0, Size: 0"), list).set(10, null);
         }};
         e = AssertThrows.getLastThrown();
         assertEquals("Expected an exception of type\n" +
                 "Exception to be thrown,\n" +
-                "but the method get(0) threw an exception of type\n" +
+                "but the method set(10, null) threw an exception of type\n" +
                 "IndexOutOfBoundsException " +
                 "(see in the 'Caused by' for the exception that was thrown)",
                 e.getMessage());
@@ -190,9 +192,23 @@ public class ProxyTest {
             assertThrows(list).get(0);
         }};
         Throwable t = AssertThrows.getLastThrown();
-        assertEquals("A proxy for the class " +
-                "org.junit.contrib.assertthrows.ProxyTest$TestClass was created, " +
-                "but then no overridable method was called on it. " +
+        assertEquals("A proxy for the class\n" +
+                "org.junit.contrib.assertthrows.ProxyTest$ClassWithFinalMethod\n" +
+                "was created, but then no overridable method was called on it.\n" +
+                "See the stack trace for where the proxy was created.", t.getMessage());
+    }
+
+    @Test
+    public void testFinalizeNotSupported() {
+        new AssertThrows() { public void test() {
+            ClassWithFinalizer test = new ClassWithFinalizer();
+            assertThrows(test).finalize();
+            assertThrows(test).finalize();
+        }};
+        Throwable t = AssertThrows.getLastThrown();
+        assertEquals("A proxy for the class\n" +
+                "org.junit.contrib.assertthrows.ProxyTest$ClassWithFinalizer\n" +
+                "was created, but then no overridable method was called on it.\n" +
                 "See the stack trace for where the proxy was created.", t.getMessage());
     }
 
@@ -214,11 +230,11 @@ public class ProxyTest {
             String error = new String(buff.toByteArray());
             if (error.length() > 0) {
                 // only verify the message if it _did_ work
-                String firstLine = error.substring(0, error.indexOf('\n'));
-                assertEquals("java.lang.AssertionError: A proxy for the class " +
-                		"org.junit.contrib.assertthrows.ProxyTest$TestClass was created, " +
-                		"but then no overridable method was called on it. " +
-                		"See the stack trace for where the proxy was created.", firstLine);
+                assertTrue(error,
+                        error.startsWith("java.lang.AssertionError: A proxy for the class\n" +
+                		"org.junit.contrib.assertthrows.ProxyTest$ClassWithFinalMethod\n" +
+                		"was created, but then no overridable method was called on it.\n" +
+                		"See the stack trace for where the proxy was created."));
             }
         } finally {
             System.setErr(oldErr);
@@ -226,7 +242,7 @@ public class ProxyTest {
     }
 
     private void testFinalMethod() {
-        TestClass test = new TestClass();
+        ClassWithFinalMethod test = new ClassWithFinalMethod();
         assertThrows(test).finalTestMethod();
     }
 
@@ -234,8 +250,18 @@ public class ProxyTest {
      * A test method with a final method. Final methods can't be overridden, to
      * they can't be tested using <code>assertThrows</code>.
      */
-    public static class TestClass {
+    public static class ClassWithFinalMethod {
         public final void finalTestMethod() {
+            // do nothing
+        }
+    }
+
+    /**
+     * A test method with a final method. Final methods can't be overridden, to
+     * they can't be tested using <code>assertThrows</code>.
+     */
+    public static class ClassWithFinalizer {
+        public void finalize() {
             // do nothing
         }
     }

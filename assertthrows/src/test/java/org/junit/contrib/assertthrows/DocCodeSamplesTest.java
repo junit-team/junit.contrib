@@ -88,7 +88,7 @@ public class DocCodeSamplesTest {
         new AssertThrows() { public void test() {
             List<String> list = new ArrayList<String>();
             assertThrows(list);
-            assertThrows(list);
+            assertThrows(list).get(0);
         }};
     }
 

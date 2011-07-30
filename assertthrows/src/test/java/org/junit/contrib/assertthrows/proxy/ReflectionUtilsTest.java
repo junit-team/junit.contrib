@@ -32,6 +32,9 @@ public class ReflectionUtilsTest {
     public void testDefaultValue() {
         assertNull(ReflectionUtils.getDefaultValue(Integer.class));
         assertEquals(
+                null,
+                ReflectionUtils.getDefaultValue(void.class));
+        assertEquals(
                 Boolean.valueOf(false),
                 ReflectionUtils.getDefaultValue(boolean.class));
         assertEquals(
@@ -55,6 +58,30 @@ public class ReflectionUtilsTest {
         assertEquals(
                 Double.valueOf(0D),
                 ReflectionUtils.getDefaultValue(double.class));
+    }
+
+    @Test
+    public void testNonPrimitiveClass() {
+        assertEquals(Object.class,
+                ReflectionUtils.getNonPrimitiveClass(Object.class));
+        assertEquals(Void.class,
+                ReflectionUtils.getNonPrimitiveClass(void.class));
+        assertEquals(Boolean.class,
+                ReflectionUtils.getNonPrimitiveClass(boolean.class));
+        assertEquals(Byte.class,
+                ReflectionUtils.getNonPrimitiveClass(byte.class));
+        assertEquals(Character.class,
+                ReflectionUtils.getNonPrimitiveClass(char.class));
+        assertEquals(Short.class,
+                ReflectionUtils.getNonPrimitiveClass(short.class));
+        assertEquals(Integer.class,
+                ReflectionUtils.getNonPrimitiveClass(int.class));
+        assertEquals(Long.class,
+                ReflectionUtils.getNonPrimitiveClass(long.class));
+        assertEquals(Float.class,
+                ReflectionUtils.getNonPrimitiveClass(float.class));
+        assertEquals(Double.class,
+                ReflectionUtils.getNonPrimitiveClass(double.class));
     }
 
     @Test

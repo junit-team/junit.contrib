@@ -43,8 +43,7 @@ public abstract class AssertThrows {
 
     /**
      * Verify an exception or error is thrown. Internally, the constructor calls
-     * {@link #verify}, which calls {@link #test} and verifies it throws an
-     * exception or error.
+     * calls {@link #test} and verifies it throws an exception or error.
      * <p>
      * For the test to pass, the {@link #test} method must throw any kind of
      * {@link Exception} or {@link Error} ( {@link AssertionError},
