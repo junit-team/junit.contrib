@@ -160,12 +160,12 @@ apply when using Cglib and Objenesis however.
 <h3>Calling a Final Method, and Forgetting to Call a Method</h3>
 <p>
 Final method can not be overridden, and therefore the tool can not verify
-it threw an exception. However, the tool will detect such a case
-on the next usage of the tool (the next call to <code>assertThrows</code>, and the
+it threw an exception. However, such cases are detected
+on the next usage (the next call to <code>assertThrows</code>, and the
 next time an <code>AssertThrows</code> object is created),
 or when the proxy is garbage collected.
 So if you made a mistake and called a final method, or did not call method 
-on the proxy <code>assertThrows</code> statement, this tool will detect it.
+on the proxy <code>assertThrows</code> statement, the tool will detect it.
 As an example, the following code will throw an exception saying 
 that no method was called on the proxy:
 </p>
