@@ -41,11 +41,12 @@ public class ExtensionTest {
             assertTrue(random.nextDouble() > 0.9);
         }};
 
-        Throwable e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             new AssertEventuallySucceeds() { public void test() {
                 assertTrue(random.nextInt(10) == 10);
             }};
-        }}.getLastThrown();
+        }};
+        Throwable e = AssertThrows.getLastThrown();
         assertEquals("Verification failed after 100 tries", e.getMessage());
     }
 
@@ -55,14 +56,15 @@ public class ExtensionTest {
         assertEventuallyEquals(10, random).nextInt(20);
         assertEventuallySucceeds(this).failWithProbability(0.9);
 
-        Throwable e;
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertEventuallyEquals(20, random).nextInt(10);
-        }}.getLastThrown();
+        }};
+        Throwable e = AssertThrows.getLastThrown();
         assertEquals("Verification failed after 100 tries", e.getMessage());
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertEventuallySucceeds(ExtensionTest.this).failWithProbability(1.0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("Verification failed after 100 tries", e.getMessage());
     }
 

@@ -43,6 +43,7 @@ This is an alpha release. The package names, API, and features may change in a f
 </li><li><a href="#TryFailCatch">Try-Fail-Catch</a>
 </li><li><a href="#Proxy">Proxy</a>
 </li><li><a href="#AnonymousClass">Anonymous Class</a>
+</li><li><a href="#LastThrown">Getting the Last Throwable</a>
 </li><li><a href="#Dependencies">Dependencies</a>
 </li><li><a href="#KnownProblems">Known Problems</a>
 </li></ul>
@@ -156,6 +157,23 @@ private classes, non-static inner classes, and anonymous inner classes are not s
 Also, classes without public constructors are not supported. Most of those limitations do not
 apply when using Cglib and Objenesis however.
 </p>
+<h3>Calling a Final Method, and Forgetting to Call a Method</h3>
+<p>
+Final method can not be overridden, and therefore the tool can not verify
+it threw an exception. However, the tool will detect such a case
+on the next usage of the tool (the next call to <code>assertThrows</code>, and the
+next time an <code>AssertThrows</code> object is created),
+or when the proxy is garbage collected.
+So if you made a mistake and called a final method, or did not call method 
+on the proxy <code>assertThrows</code> statement, this tool will detect it.
+As an example, the following code will throw an exception saying 
+that no method was called on the proxy:
+</p>
+<pre>
+List<String> list = new ArrayList<String>();
+assertThrows(list);
+assertThrows(list);
+</pre>
 
 <h2 id="AnonymousClass">Anonymous Class</h2> 
 <p>
@@ -186,21 +204,29 @@ new AssertThrows(new NumberFormatException("For input string: \"x\"")) {
 }};
 </pre>
 <p>
-If you need to verify the exception message in more detail 
-(for example, match against a pattern, or verify the cause),
-you can get the last exception or error:
-</p>
-<pre>
-Throwable t = new AssertThrows() { public void test() {
-        Integer.parseInt("x");
-}}.getLastThrown();
-</pre>
-<p>
 Please note you need to add the following import statement:
 </p>
 <pre>
 import org.junit.contrib.assertthrows.AssertThrows;
 </pre>
+
+<h2 id="LastThrown">Getting the Last Throwable</h2> 
+<p>
+If you need to verify the exception that in more detail 
+(for example, match the message against a pattern, or verify the cause),
+you can get the last exception or error as follows:
+</p>
+<pre>
+Throwable t = AssertThrows.getLastThrown();
+</pre>
+<p>
+This will get the last exception or error that was thrown by a test
+in the current thread, no matter if the proxy mechanism (<code>assertThrows</code>)
+or the anonymous class mechanism (<code>new AssertThrows</code>) was used.
+If the last executed test did not throw an exception, it will return null.
+Please note even thought this is a static method, it is multi-threading save because
+it uses a <code>ThreadLocal</code> variable internally.
+</p>
 
 <h2 id="Dependencies">Dependencies</h2>
 <p>

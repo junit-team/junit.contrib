@@ -19,7 +19,10 @@ package org.junit.contrib.assertthrows;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.Test;
 
@@ -56,17 +59,19 @@ public class ProxyTest {
         final List<String> list = new ArrayList<String>();
         Throwable e;
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows(list).size();
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("Expected an exception to be thrown,\n" +
                 "but the method size() returned 0",
                 e.getMessage());
         assertNull(e.getCause());
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows(NullPointerException.class, list).size();
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("Expected an exception of type\n" +
                 "NullPointerException to be thrown,\n" +
                 "but the method size() returned 0",
@@ -79,9 +84,10 @@ public class ProxyTest {
         final List<String> list = new ArrayList<String>();
         Throwable e;
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows(NullPointerException.class, list).get(0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("Expected an exception of type\n" +
                 "NullPointerException to be thrown,\n" +
                 "but the method get(0) threw an exception of type\n" +
@@ -90,16 +96,18 @@ public class ProxyTest {
                 e.getMessage());
         assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows(new IndexOutOfBoundsException(), list).get(0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("Expected exception message <null>, but got <Index: 0, Size: 0>",
                 e.getMessage());
         assertEquals(IndexOutOfBoundsException.class, e.getCause().getClass());
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows(new Exception("Index: 0, Size: 0"), list).get(0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("Expected an exception of type\n" +
                 "Exception to be thrown,\n" +
                 "but the method get(0) threw an exception of type\n" +
@@ -114,19 +122,22 @@ public class ProxyTest {
         final List<String> list = new ArrayList<String>();
         Throwable e;
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows((List<String>) null).get(0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("The passed object is null", e.getMessage());
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows((Class<Exception>) null, list).get(0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("The passed exception class is null", e.getMessage());
 
-        e = new AssertThrows() { public void test() {
+        new AssertThrows() { public void test() {
             assertThrows((Exception) null, list).get(0);
-        }}.getLastThrown();
+        }};
+        e = AssertThrows.getLastThrown();
         assertEquals("The passed exception is null", e.getMessage());
     }
 
@@ -169,6 +180,64 @@ public class ProxyTest {
             throw new UnsupportedOperationException();
         }
 
+    }
+
+    @Test
+    public void testForgotToCallMethodDetectedOnNextCall() {
+        testFinalMethod();
+        new AssertThrows() { public void test() {
+            List<String> list = new ArrayList<String>();
+            assertThrows(list).get(0);
+        }};
+        Throwable t = AssertThrows.getLastThrown();
+        assertEquals("A proxy for the class " +
+                "org.junit.contrib.assertthrows.ProxyTest$TestClass was created, " +
+                "but then no overridable method was called on it. " +
+                "See the stack trace for where the proxy was created.", t.getMessage());
+    }
+
+    @Test
+    public void testForgotToCallMethodDetectedOnFinalize() {
+        ByteArrayOutputStream buff = new ByteArrayOutputStream();
+        PrintStream p = new PrintStream(buff);
+        PrintStream oldErr = System.err;
+        try {
+            System.setErr(p);
+            testFinalMethod();
+            // force gc - this is not guaranteed to work
+            LinkedList<byte[]> memoryEater = new LinkedList<byte[]>();
+            for (int i = 0; i < 100 && buff.size() == 0; i++) {
+                memoryEater.add(new byte[1000]);
+                System.gc();
+                System.err.flush();
+            }
+            String error = new String(buff.toByteArray());
+            if (error.length() > 0) {
+                // only verify the message if it _did_ work
+                String firstLine = error.substring(0, error.indexOf('\n'));
+                assertEquals("java.lang.AssertionError: A proxy for the class " +
+                		"org.junit.contrib.assertthrows.ProxyTest$TestClass was created, " +
+                		"but then no overridable method was called on it. " +
+                		"See the stack trace for where the proxy was created.", firstLine);
+            }
+        } finally {
+            System.setErr(oldErr);
+        }
+    }
+
+    private void testFinalMethod() {
+        TestClass test = new TestClass();
+        assertThrows(test).finalTestMethod();
+    }
+
+    /**
+     * A test method with a final method. Final methods can't be overridden, to
+     * they can't be tested using <code>assertThrows</code>.
+     */
+    public static class TestClass {
+        public final void finalTestMethod() {
+            // do nothing
+        }
     }
 
 }
