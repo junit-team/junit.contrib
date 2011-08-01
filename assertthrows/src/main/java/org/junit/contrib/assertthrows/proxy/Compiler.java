@@ -16,15 +16,13 @@
  */
 package org.junit.contrib.assertthrows.proxy;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -153,15 +151,12 @@ public class Compiler {
         File javaFile = new File(dir, className + ".java");
         File classFile = new File(dir, className + ".class");
         classFile.delete();
+        FileOutputStream f = null;
         try {
-            FileWriter f = new FileWriter(javaFile.getAbsolutePath(), false);
-            try {
-                PrintWriter out = new PrintWriter(new BufferedWriter(f));
-                out.println(source);
-                out.close();
-            } finally {
-                f.close();
-            }
+            f = new FileOutputStream(javaFile);
+            f.write(source.getBytes("UTF-8"));
+            f.close();
+            f = null;
             try {
                 if (JAVA_COMPILER != null) {
                     javaxToolsJavac(javaFile);
@@ -177,6 +172,10 @@ public class Compiler {
                         javaFile.getAbsolutePath() + ": " + e.getMessage());
                 io.initCause(e);
                 throw io;
+            } finally {
+                if (f != null) {
+                    f.close();
+                }
             }
             byte[] data = new byte[(int) classFile.length()];
             DataInputStream in = new DataInputStream(new FileInputStream(classFile));
