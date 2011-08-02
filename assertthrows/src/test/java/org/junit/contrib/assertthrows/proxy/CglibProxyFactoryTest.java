@@ -40,6 +40,14 @@ public class CglibProxyFactoryTest {
     }
 
     @Test
+    public void testProxyOnProxy() {
+        final Object p = createProxy(new Object());
+        new AssertThrows() { public void test() {
+            createProxy(p);
+        }};
+    }
+
+    @Test
     public void testJavaUtilRandom() {
         createProxy(new Random()).nextInt(1);
         assertEquals("nextInt = 0", buff.toString());
