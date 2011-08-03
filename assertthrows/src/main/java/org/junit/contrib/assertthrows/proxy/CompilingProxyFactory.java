@@ -35,14 +35,21 @@ import java.util.TreeSet;
  */
 public class CompilingProxyFactory extends ProxyFactory {
 
-    private static final CompilingProxyFactory INSTANCE = new CompilingProxyFactory();
+    /**
+     * The compiler to use. Implementation note: this field might be set
+     * to null by Tomcat when unloading a web application that uses this proxy
+     * factory.
+     */
+    private Compiler compiler = new Compiler();
 
-    private Compiler compiler;
+    /**
+     * A cache of compiled classes. Implementation note: this field might be set
+     * to null by Tomcat when unloading a web application that uses this proxy
+     * factory.
+     */
     private HashMap<Class<?>, Class<?>> proxyMap = new HashMap<Class<?>, Class<?>>();
 
-    public static CompilingProxyFactory getInstance() {
-        return INSTANCE;
-    }
+    private boolean useSystemJavaCompiler = true;
 
     @SuppressWarnings("unchecked")
     public <T> T createProxy(T obj, final InvocationHandler handler) {
@@ -59,6 +66,19 @@ public class CompilingProxyFactory extends ProxyFactory {
             ia.initCause(e);
             throw ia;
         }
+    }
+
+    public void setUseSystemJavaCompiler(boolean useSystemJavaCompiler) {
+        this.useSystemJavaCompiler = useSystemJavaCompiler;
+        getCompiler().setUseSystemJavaCompiler(useSystemJavaCompiler);
+    }
+
+    private Compiler getCompiler() {
+        if (compiler == null) {
+            compiler = new Compiler();
+            compiler.setUseSystemJavaCompiler(useSystemJavaCompiler);
+        }
+        return compiler;
     }
 
     /**
@@ -133,13 +153,6 @@ public class CompilingProxyFactory extends ProxyFactory {
             ia.initCause(e);
             throw ia;
         }
-    }
-
-    private Compiler getCompiler() {
-        if (compiler == null) {
-            compiler = new Compiler();
-        }
-        return compiler;
     }
 
     public HashMap<Class<?>, Class<?>> getProxyMap() {

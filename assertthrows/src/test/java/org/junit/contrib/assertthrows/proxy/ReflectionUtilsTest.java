@@ -88,7 +88,7 @@ public class ReflectionUtilsTest {
     public void testPackageName() {
         assertEquals("", ReflectionUtils.getPackageName(int.class));
         assertEquals("java.lang", ReflectionUtils.getPackageName(Integer.class));
-        Class<?> p = CompilingProxyFactory.getInstance().getClassProxy(Random.class);
+        Class<?> p = new CompilingProxyFactory().getClassProxy(Random.class);
         assertEquals("proxy.java.util", ReflectionUtils.getPackageName(p));
     }
 

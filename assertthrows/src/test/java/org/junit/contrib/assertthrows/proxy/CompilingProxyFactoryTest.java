@@ -34,6 +34,10 @@ public class CompilingProxyFactoryTest {
     StringBuilder buff = new StringBuilder();
     int methodCallCount;
 
+    protected boolean disableSystemJavaCompiler() {
+        return false;
+    }
+
     @Test
     public void testObject() {
         createProxy(new Object()).equals(null);
@@ -183,7 +187,11 @@ public class CompilingProxyFactoryTest {
     }
 
     <T> T createProxy(final T obj) {
-        return CompilingProxyFactory.getInstance().createProxy(obj, new InvocationHandler() {
+        CompilingProxyFactory factory = new CompilingProxyFactory();
+        if (disableSystemJavaCompiler()) {
+            factory.setUseSystemJavaCompiler(false);
+        }
+        return factory.createProxy(obj, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
                 buff.append(method.getName());
                 methodCallCount++;

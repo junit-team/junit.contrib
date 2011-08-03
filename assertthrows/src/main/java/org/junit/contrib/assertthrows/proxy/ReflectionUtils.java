@@ -26,10 +26,6 @@ import java.lang.reflect.Modifier;
  */
 public class ReflectionUtils {
 
-    private ReflectionUtils() {
-        // utility class
-    }
-
     /**
      * Get the default value for the given class. For non-primitive classes,
      * this is null, and for primitive classes this is the zero or false.

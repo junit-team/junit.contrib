@@ -44,7 +44,8 @@ public class TomcatClearsFieldsTest {
 
     private static final String[] KNOWN_REFRESHED = {
         "org.junit.contrib.assertthrows.proxy.CompilingProxyFactory.compiler",
-        "org.junit.contrib.assertthrows.proxy.CompilingProxyFactory.proxyMap"
+        "org.junit.contrib.assertthrows.proxy.CompilingProxyFactory.proxyMap",
+        "org.junit.contrib.assertthrows.proxy.CglibProxyFactory.objectCreator"
     };
 
     private ArrayList<String> errors = new ArrayList<String>();
@@ -71,13 +72,15 @@ public class TomcatClearsFieldsTest {
     }
 
     private void initClasses() {
+        ProxyFactory.getClassProxyFactory();
+        ProxyFactory.getFactory(List.class);
         List<String> list = new ArrayList<String>();
-        CglibProxyFactory.getInstance().createProxy(list, new InvocationHandler() {
+        new CglibProxyFactory().createProxy(list, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) {
                 return null;
             }
         });
-        CompilingProxyFactory.getInstance().createProxy(list, new InvocationHandler() {
+        new CompilingProxyFactory().createProxy(list, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) {
                 return null;
             }
@@ -87,8 +90,6 @@ public class TomcatClearsFieldsTest {
                 return null;
             }
         });
-        ProxyFactory.getClassProxyFactory();
-        ProxyFactory.getFactory(List.class);
     }
 
     private void clear() throws Exception {

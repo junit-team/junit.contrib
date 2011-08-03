@@ -39,19 +39,19 @@ public abstract class ProxyFactory {
         new HashMap<Class<?>, ProxyFactory>();
 
     /**
-     * The cglib proxy factory, or null if cglib is not in the classpath.
+     * The proxy factory (The cglib proxy factory, or the compiling proxy
+     * factory if cglib is not in the classpath).
      */
-    private static final ProxyFactory CGLIB_FACTORY;
+    private static final ProxyFactory CLASS_PROXY_FACTORY;
 
     static {
-        ProxyFactory instance;
+        ProxyFactory instance = new CompilingProxyFactory();
         try {
-             instance = CglibProxyFactory.getInstance();
+             instance = new CglibProxyFactory();
         } catch (Throwable e) {
             // not available
-            instance = CompilingProxyFactory.getInstance();
         }
-        CGLIB_FACTORY = instance;
+        CLASS_PROXY_FACTORY = instance;
     }
 
     /**
@@ -61,10 +61,7 @@ public abstract class ProxyFactory {
      * @return the proxy factory
      */
     public static ProxyFactory getClassProxyFactory() {
-        if (CGLIB_FACTORY != null) {
-            return CGLIB_FACTORY;
-        }
-        return CompilingProxyFactory.getInstance();
+        return CLASS_PROXY_FACTORY;
     }
 
     /**

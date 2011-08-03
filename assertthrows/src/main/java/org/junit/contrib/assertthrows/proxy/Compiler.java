@@ -38,11 +38,6 @@ import java.util.HashMap;
  */
 public class Compiler {
 
-    private static final Class<?> JAVAC_SUN;
-
-    // private static final JavaCompiler JAVA_COMPILER;
-    private static final Object JAVA_COMPILER;
-
     /**
      * The class name to source code map.
      */
@@ -53,25 +48,42 @@ public class Compiler {
      */
     HashMap<String, Class<?>> compiled = new HashMap<String, Class<?>>();
 
+    /**
+     * Whether using the system java compiler (
+     * <code>javax.tools.ToolProvider.getSystemJavaCompiler</code>) is allowed.
+     */
+    private boolean useSystemJavaCompiler = true;
+
+    private Class<?> javacSun;
+
+    // private static final JavaCompiler javaCompiler;
+    private Object javaCompiler;
+
     private String compileDir = System.getProperty("java.io.tmpdir", ".");
 
-    static {
-        Object comp;
-        try {
-            // comp = ToolProvider.getSystemJavaCompiler();
-            comp = ReflectionUtils.callStaticMethod(
-                    "javax.tools.ToolProvider.getSystemJavaCompiler");
-        } catch (Exception e) {
-            comp = null;
+    public void setUseSystemJavaCompiler(boolean useSystemJavaCompiler) {
+        this.useSystemJavaCompiler = useSystemJavaCompiler;
+    }
+
+    private void initCompiler() {
+        Object comp = null;
+        if (useSystemJavaCompiler) {
+            try {
+                // comp = ToolProvider.getSystemJavaCompiler();
+                comp = ReflectionUtils.callStaticMethod(
+                        "javax.tools.ToolProvider.getSystemJavaCompiler");
+            } catch (Exception e) {
+                // ignore
+            }
         }
-        JAVA_COMPILER = comp;
+        javaCompiler = comp;
         Class<?> javac;
         try {
             javac = Class.forName("com.sun.tools.javac.Main");
         } catch (Exception e) {
             javac = null;
         }
-        JAVAC_SUN = javac;
+        javacSun = javac;
     }
 
     /**
@@ -158,9 +170,10 @@ public class Compiler {
             f.close();
             f = null;
             try {
-                if (JAVA_COMPILER != null) {
+                initCompiler();
+                if (javaCompiler != null) {
                     javaxToolsJavac(javaFile);
-                } else if (JAVAC_SUN != null) {
+                } else if (javacSun != null) {
                     javacSun(javaFile);
                 } else {
                     throw new IOException("Could not load a java compiler");
@@ -197,8 +210,8 @@ public class Compiler {
                 "-d", compileDir,
                 "-encoding", "UTF-8");
 
-        // JavaCompiler compiler = (JavaCompiler) JAVA_COMPILER;
-        Object compiler = JAVA_COMPILER;
+        // JavaCompiler compiler = (JavaCompiler) javaCompiler;
+        Object compiler = javaCompiler;
 
         // StandardJavaFileManager fileManager = compiler.
         //         getStandardFileManager(null, null, Charset.forName("UTF-8"));
@@ -232,8 +245,8 @@ public class Compiler {
         try {
             System.setErr(temp);
             Method compile;
-            compile = JAVAC_SUN.getMethod("compile", String[].class);
-            Object javac = JAVAC_SUN.newInstance();
+            compile = javacSun.getMethod("compile", String[].class);
+            Object javac = javacSun.newInstance();
             compile.invoke(javac, (Object) new String[] {
                     "-sourcepath", compileDir,
                     "-d", compileDir,

@@ -19,6 +19,7 @@ package org.junit.contrib.assertthrows.proxy;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
@@ -30,63 +31,54 @@ import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.NoOp;
 
 /**
- * This proxy factory uses the cglib and (optionally) objenesis to create new
+ * This proxy factory uses the cglib and (optionally) Objenesis to create new
  * proxy objects for existing objects.
  *
  * @author Thomas Mueller
  */
 public class CglibProxyFactory extends ProxyFactory {
 
-    private static final CglibProxyFactory INSTANCE = new CglibProxyFactory();
+    /**
+     * The default object creator (Objenesis if in the classpath, or the
+     * reflection creator if not). Implementation note: this field might be set
+     * to null by Tomcat when unloading a web application that uses this proxy
+     * factory.
+     */
+    private ObjectCreator objectCreator;
 
     /**
-     * The reflection object creator.
+     * Whether using Objenesis to create objects is allowed.
      */
-    private static final ObjectCreator REFLECTION_OBJECT_CREATOR = new ReflectionObjectCreator();
+    private boolean useObjenesis = true;
 
     /**
-     * The default object creator (objenesis if in the classpath, or the reflection creator if not).
+     * Get the object creator.
+     *
+     * @return the object creator (never null)
      */
-    private static final ObjectCreator OBJECT_CREATOR;
-
-    static {
-        ObjectCreator o;
-        try {
-            o = new ObjenesisObjectCreator();
-        } catch (Throwable e) {
-            o = REFLECTION_OBJECT_CREATOR;
+    public ObjectCreator getObjectCreator() {
+        if (objectCreator == null) {
+            ObjectCreator o = new ReflectionObjectCreator();
+            if (useObjenesis) {
+                try {
+                    o = new ObjenesisObjectCreator();
+                } catch (Throwable e) {
+                    useObjenesis = false;
+                }
+            }
+            objectCreator = o;
         }
-        OBJECT_CREATOR = o;
+        return objectCreator;
     }
 
-    /**
-     * Get an instance of this proxy factory.
-     *
-     * @return the proxy factory
-     */
-    public static CglibProxyFactory getInstance() {
-        return INSTANCE;
+    public void setUseObjenesis(boolean useObjenesis) {
+        this.useObjenesis = useObjenesis;
+        objectCreator = null;
     }
 
-    public <T> T createProxy(T obj, InvocationHandler handler) {
-        return createProxy(obj, handler, false);
-    }
-
-    /**
-     * Create a proxy object for the given object. This will allow to disable
-     * using objenesis to create the instance, even if it is in the classpath.
-     *
-     * @param <T> the type
-     * @param obj the object
-     * @param handler the invocation handler
-     * @param forceUsingReflection whether to force using reflection to create a new instance,
-     *          even if objenesis is in the classpath
-     * @return the proxy
-     * @throws IllegalArgumentException a proxy could not be generated for the
-     *             given object
-     */
+    @Override
     @SuppressWarnings("unchecked")
-    public <T> T createProxy(T obj, final InvocationHandler handler, boolean forceUsingReflection) {
+    public <T> T createProxy(T obj, final InvocationHandler handler) {
         Class<?> c = obj.getClass();
         net.sf.cglib.proxy.InvocationHandler cglibHandler =
                 new net.sf.cglib.proxy.InvocationHandler() {
@@ -95,22 +87,21 @@ public class CglibProxyFactory extends ProxyFactory {
             }
         };
         Class<?> proxyClass = createProxyClass(c);
-        Factory proxy = (Factory) newInstance(c, proxyClass, forceUsingReflection);
+        Factory proxy = (Factory) newInstance(c, proxyClass);
         proxy.setCallbacks(new Callback[] { cglibHandler, NoOp.INSTANCE });
         return (T) proxy;
     }
 
-    private Object newInstance(Class<?> baseClass, Class<?> c, boolean forceUsingReflection) {
-        ObjectCreator creator = forceUsingReflection ?
-                REFLECTION_OBJECT_CREATOR : OBJECT_CREATOR;
+    private Object newInstance(Class<?> baseClass, Class<?> c) {
+        ObjectCreator creator = getObjectCreator();
         try {
             return creator.newInstance(c);
         } catch (Exception e) {
             IllegalArgumentException ia = new IllegalArgumentException(
                     "Could not create a new proxy instance for the base class " +
                     baseClass.getName() +
-                    (REFLECTION_OBJECT_CREATOR == creator ?
-                    " (probably because objenesis is not used)" : ""));
+                    (useObjenesis ? "" :
+                    " (probably because Objenesis is not used)"));
             ia.initCause(e);
             throw ia;
         }
@@ -154,12 +145,12 @@ public class CglibProxyFactory extends ProxyFactory {
     }
 
     /**
-     * An object creator that uses the objenesis library.
+     * An object creator that uses the Objenesis library.
      */
     static class ObjenesisObjectCreator implements ObjectCreator {
 
         /**
-         * A ObjenesisStd object, or null if objenesis is not in the classpath.
+         * A ObjenesisStd object, or null if Objenesis is not in the classpath.
          */
         private static final Objenesis OBJENESIS = new ObjenesisStd();
 
@@ -175,8 +166,27 @@ public class CglibProxyFactory extends ProxyFactory {
     static class ReflectionObjectCreator implements ObjectCreator {
 
         public Object newInstance(Class<?> c) throws Exception {
-            Constructor<?> cons = c.getConstructor(new Class<?>[] {});
-            return cons.newInstance();
+            Constructor<?> constructor = null;
+            int paramCount = Integer.MAX_VALUE;
+            for (Constructor<?> cons : c.getConstructors()) {
+                if (Modifier.isPublic(cons.getModifiers())) {
+                    int pc = cons.getParameterTypes().length;
+                    if (pc < paramCount) {
+                        constructor = cons;
+                        paramCount = pc;
+                    }
+                }
+            }
+            if (constructor == null) {
+                throw new IllegalArgumentException(
+                        "No public constructor was found for: " + c.getName());
+            }
+            Object[] params = new Object[paramCount];
+            for (int i = 0; i < paramCount; i++) {
+                Class<?> p = constructor.getParameterTypes()[i];
+                params[i] = ReflectionUtils.getDefaultValue(p);
+            }
+            return constructor.newInstance(params);
         }
 
     }
