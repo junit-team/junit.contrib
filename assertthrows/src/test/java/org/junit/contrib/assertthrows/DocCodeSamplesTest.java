@@ -19,6 +19,7 @@ package org.junit.contrib.assertthrows;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
+import org.junit.contrib.assertthrows.verify.ExceptionVerifier;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.contrib.assertthrows.AssertThrows.assertThrows;
@@ -89,6 +90,15 @@ public class DocCodeSamplesTest {
             List<String> list = new ArrayList<String>();
             assertThrows(list);
             assertThrows(list).get(0);
+        }};
+    }
+
+    @Test
+    public void testVerifyNoMethodWasCalled() {
+        new AssertThrows() { public void test() {
+            List<String> list = new ArrayList<String>();
+            assertThrows(list);
+            ExceptionVerifier.verifyLastProxyWasUsed();
         }};
     }
 

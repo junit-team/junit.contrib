@@ -144,7 +144,7 @@ assertThrows(emptyList).get(0);
 </pre>
 <p>
 Once such a class proxy is created, it is used for all future <code>assertThrows</code> calls
-with object is of this class.
+where the provided object is of this class.
 Creating a proxy that extends a class is a bit challenging.
 It is not possibly to create a proxy for a final class, because extending a final class is not allowed.
 Also, final methods can not be overridden.
@@ -167,7 +167,7 @@ on the next usage (the next call to <code>assertThrows</code>, and the
 next time an <code>AssertThrows</code> object is created),
 or when the proxy is garbage collected.
 So if you made a mistake and called a final method, or did not call method 
-on the proxy <code>assertThrows</code> object, the tool will detect it.
+on the proxy <code>assertThrows</code> object, the tool will usually detect it.
 As an example, the following code will throw an exception saying 
 that no method was called on the proxy:
 </p>
@@ -176,6 +176,10 @@ List<String> list = new ArrayList<String>();
 assertThrows(list);
 assertThrows(list).get(0);
 </pre>
+<p>
+You may also verify the usage explicitly by calling <code>ExceptionVerifier.verifyLastProxyWasUsed()</code>,
+for example in a <code>tearDown</code> method or JUnit 4 <code>Rule</code>.
+</p>
 
 <h2 id="AnonymousClass">Anonymous Class</h2> 
 <p>

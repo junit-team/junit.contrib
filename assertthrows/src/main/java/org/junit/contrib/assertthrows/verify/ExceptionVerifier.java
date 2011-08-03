@@ -91,14 +91,22 @@ public class ExceptionVerifier implements ResultVerifier {
         if (obj == null) {
             throw new NullPointerException("The passed object is null");
         }
-        verifyLastHandlerWasUsed();
+        verifyLastProxyWasUsed();
         VerifyingInvocationHandler handler = new VerifyingInvocationHandler(verifier, obj);
-        setLastHandler(handler);
+        setLastProxyHandler(handler);
         ProxyFactory factory = ProxyFactory.getFactory(obj.getClass());
         return factory.createProxy(obj, handler);
     }
 
-    private static void verifyLastHandlerWasUsed() {
+    /**
+     * Verify that the last proxy was actually used. Calling this method is
+     * optional, as it is automatically verified before creating the next proxy.
+     * Also, wrong usage is detected when the proxy is garbage collected.
+     * However if may make sense to call this method explicitly in a tearDown
+     * method or JUnit 4 Rule. This method is thread-safe, as it uses a
+     * ThreadLocal internally.
+     */
+    public static void verifyLastProxyWasUsed() {
         WeakReference<VerifyingInvocationHandler> w = LAST_HANDLER.get();
         if (w != null) {
             VerifyingInvocationHandler last = w.get();
@@ -108,7 +116,7 @@ public class ExceptionVerifier implements ResultVerifier {
         }
     }
 
-    private static void setLastHandler(VerifyingInvocationHandler handler) {
+    private static void setLastProxyHandler(VerifyingInvocationHandler handler) {
         WeakReference<VerifyingInvocationHandler> w =
             new WeakReference<VerifyingInvocationHandler>(handler);
         LAST_HANDLER.set(w);
