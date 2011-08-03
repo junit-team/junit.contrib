@@ -37,8 +37,7 @@ public class CompilingProxyFactory extends ProxyFactory {
 
     private static final CompilingProxyFactory INSTANCE = new CompilingProxyFactory();
 
-    private Compiler compiler = new Compiler();
-
+    private Compiler compiler;
     private HashMap<Class<?>, Class<?>> proxyMap = new HashMap<Class<?>, Class<?>>();
 
     public static CompilingProxyFactory getInstance() {
@@ -71,7 +70,8 @@ public class CompilingProxyFactory extends ProxyFactory {
      *             for the passed class
      */
     public Class<?> getClassProxy(Class<?> c) throws IllegalArgumentException {
-        Class<?> p = proxyMap.get(c);
+        HashMap<Class<?>, Class<?>> map = getProxyMap();
+        Class<?> p = map.get(c);
         if (p != null) {
             return p;
         }
@@ -120,11 +120,12 @@ public class CompilingProxyFactory extends ProxyFactory {
         gen.write(new PrintWriter(sw));
         String code = sw.toString();
         String name = packageName + "." + className;
-        compiler.setSource(name, code);
+        Compiler comp = getCompiler();
+        comp.setSource(name, code);
         // System.out.println(code);
         try {
-            Class<?> pc = compiler.getClass(name);
-            proxyMap.put(c, pc);
+            Class<?> pc = comp.getClass(name);
+            map.put(c, pc);
             return pc;
         } catch (ClassNotFoundException e) {
             IllegalArgumentException ia = new IllegalArgumentException(
@@ -132,6 +133,20 @@ public class CompilingProxyFactory extends ProxyFactory {
             ia.initCause(e);
             throw ia;
         }
+    }
+
+    private Compiler getCompiler() {
+        if (compiler == null) {
+            compiler = new Compiler();
+        }
+        return compiler;
+    }
+
+    public HashMap<Class<?>, Class<?>> getProxyMap() {
+        if (proxyMap == null) {
+            proxyMap = new HashMap<Class<?>, Class<?>>();
+        }
+        return proxyMap;
     }
 
     /**
