@@ -40,12 +40,10 @@ import org.junit.contrib.assertthrows.verify.ResultVerifier;
 public abstract class AssertThrows {
 
     private final ResultVerifier verifier;
-    private Throwable lastThrown;
 
     /**
      * Verify an exception or error is thrown. Internally, the constructor calls
-     * {@link #verify}, which calls {@link #test} and verifies it throws an
-     * exception or error.
+     * calls {@link #test} and verifies it throws an exception or error.
      * <p>
      * For the test to pass, the {@link #test} method must throw any kind of
      * {@link Exception} or {@link Error} ( {@link AssertionError},
@@ -105,9 +103,9 @@ public abstract class AssertThrows {
      * called by the constructor automatically, so it is usually not required to
      * call it manually.
      */
-    protected void verify() {
+    private void verify() {
         while (true) {
-            lastThrown = null;
+            Throwable lastThrown = null;
             try {
                 test();
                 // can't call verifier.verify here, because it can
@@ -115,6 +113,7 @@ public abstract class AssertThrows {
             } catch (Throwable e) {
                 lastThrown = e;
             }
+            ExceptionVerifier.setLastThrown(lastThrown);
             if (!verifier.verify(null, lastThrown, null)) {
                 return;
             }
@@ -194,12 +193,14 @@ public abstract class AssertThrows {
     public abstract void test() throws Exception;
 
     /**
-     * Get the last exception or error (if any) that was thrown.
+     * Get the last exception or error (if any) that was thrown in a test in the
+     * current thread. This method returns null if the last test did not throw
+     * an exception.
      *
      * @return the last thrown exception or error, or null
      */
-    public Throwable getLastThrown() {
-        return lastThrown;
+    public static Throwable getLastThrown() {
+        return ExceptionVerifier.getLastThrown();
     }
 
 }

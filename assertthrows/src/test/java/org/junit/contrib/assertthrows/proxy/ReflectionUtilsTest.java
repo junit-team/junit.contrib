@@ -32,6 +32,9 @@ public class ReflectionUtilsTest {
     public void testDefaultValue() {
         assertNull(ReflectionUtils.getDefaultValue(Integer.class));
         assertEquals(
+                null,
+                ReflectionUtils.getDefaultValue(void.class));
+        assertEquals(
                 Boolean.valueOf(false),
                 ReflectionUtils.getDefaultValue(boolean.class));
         assertEquals(
@@ -58,10 +61,34 @@ public class ReflectionUtilsTest {
     }
 
     @Test
+    public void testNonPrimitiveClass() {
+        assertEquals(Object.class,
+                ReflectionUtils.getNonPrimitiveClass(Object.class));
+        assertEquals(Void.class,
+                ReflectionUtils.getNonPrimitiveClass(void.class));
+        assertEquals(Boolean.class,
+                ReflectionUtils.getNonPrimitiveClass(boolean.class));
+        assertEquals(Byte.class,
+                ReflectionUtils.getNonPrimitiveClass(byte.class));
+        assertEquals(Character.class,
+                ReflectionUtils.getNonPrimitiveClass(char.class));
+        assertEquals(Short.class,
+                ReflectionUtils.getNonPrimitiveClass(short.class));
+        assertEquals(Integer.class,
+                ReflectionUtils.getNonPrimitiveClass(int.class));
+        assertEquals(Long.class,
+                ReflectionUtils.getNonPrimitiveClass(long.class));
+        assertEquals(Float.class,
+                ReflectionUtils.getNonPrimitiveClass(float.class));
+        assertEquals(Double.class,
+                ReflectionUtils.getNonPrimitiveClass(double.class));
+    }
+
+    @Test
     public void testPackageName() {
         assertEquals("", ReflectionUtils.getPackageName(int.class));
         assertEquals("java.lang", ReflectionUtils.getPackageName(Integer.class));
-        Class<?> p = CompilingProxyFactory.getInstance().getClassProxy(Random.class);
+        Class<?> p = new CompilingProxyFactory().getClassProxy(Random.class);
         assertEquals("proxy.java.util", ReflectionUtils.getPackageName(p));
     }
 

@@ -18,6 +18,7 @@ package org.junit.contrib.assertthrows.proxy;
 
 import static org.junit.Assert.assertEquals;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Random;
 import org.junit.Test;
@@ -32,6 +33,10 @@ public class CompilingProxyFactoryTest {
 
     StringBuilder buff = new StringBuilder();
     int methodCallCount;
+
+    protected boolean disableSystemJavaCompiler() {
+        return false;
+    }
 
     @Test
     public void testObject() {
@@ -52,11 +57,19 @@ public class CompilingProxyFactoryTest {
     }
 
     @Test
+    public void testProxyOnProxy() {
+        final PublicStaticInnerClass x = createProxy(new PublicStaticInnerClass());
+        new AssertThrows() { public void test() {
+            createProxy(x);
+        }};
+    }
+
+    @Test
     public void testAnonymousClass() {
         new AssertThrows(new IllegalArgumentException(
                 "Creating a proxy for an anonymous inner class is not supported: " +
                 "org.junit.contrib.assertthrows.proxy.CompilingProxyFactoryTest$" +
-                "1$1")) {
+                "2$1")) {
             public void test() {
                 createProxy(new Object() {
                     // anonymous
@@ -130,6 +143,34 @@ public class CompilingProxyFactoryTest {
         callCloneMethods(1, createProxy(new ClassWithBridgeMethod()));
     }
 
+    @Test
+    public void testVarArgs() {
+        createProxy(new ClassWithVarArgsMethod()).sum(1.2, 3.0);
+        assertEquals("sum = 4.2", buff.toString());
+    }
+
+    @Test
+    public void testSpecialFields() {
+        createProxy(new ClassWithSpecialFields(1, 2, 3)).toString(4, 5);
+        assertEquals("toString = 1 2 3 4 5", buff.toString());
+    }
+
+    @Test
+    public void testConstructorWithPrimitiveArguments() {
+        ClassWithPrimitiveConstructorArguments x;
+        x = new ClassWithPrimitiveConstructorArguments(false, (byte) 0, (char) 0, (short) 0,
+                0, 0, 0.0f, 0.0d, null);
+        createProxy(x).toString();
+        assertEquals("toString = ClassWithPrimitiveConstructorArguments", buff.toString());
+    }
+
+    @Test
+    public void testMultipleConstructors() {
+        ClassWithMultipleConstructors x = new ClassWithMultipleConstructors(1, 2);
+        createProxy(x).toString();
+        assertEquals("toString = ClassWithMultipleConstructors", buff.toString());
+    }
+
     private void callCloneMethods(
             int expectedCallCount,
             ClassWithBridgeMethod obj) throws Exception {
@@ -146,13 +187,22 @@ public class CompilingProxyFactoryTest {
     }
 
     <T> T createProxy(final T obj) {
-        return CompilingProxyFactory.getInstance().createProxy(obj, new InvocationHandler() {
+        CompilingProxyFactory factory = new CompilingProxyFactory();
+        if (disableSystemJavaCompiler()) {
+            factory.setUseSystemJavaCompiler(false);
+        }
+        return factory.createProxy(obj, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
                 buff.append(method.getName());
-                Object o = method.invoke(obj, args);
-                buff.append(" = ").append(o);
                 methodCallCount++;
-                return o;
+                try {
+                    Object o = method.invoke(obj, args);
+                    buff.append(" = ").append(o);
+                    return o;
+                } catch (InvocationTargetException e) {
+                    buff.append(" threw ").append(e.getTargetException());
+                    throw e;
+                }
             }
         });
     }
@@ -237,6 +287,75 @@ public class CompilingProxyFactoryTest {
         }
         public String toString() {
             return "ClassWithBridgeMethod";
+        }
+    }
+
+    /**
+     * A class with a var-args method.
+     */
+    public static class ClassWithVarArgsMethod {
+        public double sum(double... args) {
+            double s = 0.0;
+            for (double x : args) {
+                s += x;
+            }
+            return s;
+        }
+    }
+
+    /**
+     * A class with specially named fields (that conflict with the default field
+     * names used in the compiling class proxy).
+     */
+    public static class ClassWithSpecialFields {
+        public int ih, ih0, ih1;
+        public ClassWithSpecialFields(int a, int b, int c) {
+            ih = a;
+            ih0 = b;
+            ih1 = c;
+        }
+        public String toString(int d, int e) {
+            return ih + " " + ih0 + " " + ih1 + " " + d + " " + e;
+        }
+    }
+
+    /**
+     * A class that uses primitive constructor arguments.
+     */
+    public static class ClassWithPrimitiveConstructorArguments {
+        public ClassWithPrimitiveConstructorArguments(boolean a, byte b, char c,
+                short d, int e, long f, float g, double h, String i) {
+            if (a || b != 0 || c != 0 || d != 0 || e != 0 || f != 0 ||
+                    g != 0 || h != 0 || i != null) {
+                throw new IllegalArgumentException();
+            }
+        }
+        public String toString() {
+            return "ClassWithPrimitiveConstructorArguments";
+        }
+    }
+
+    /**
+     * A class with multiple constructors.
+     */
+    public static class ClassWithMultipleConstructors {
+        private ClassWithMultipleConstructors(int a, int b, int c) {
+            if (a != 1 || b != 2 || c != 3) {
+                throw new IllegalArgumentException();
+            }
+        }
+        public ClassWithMultipleConstructors(int a, int b) {
+            if (a != 1 || b != 2) {
+                throw new IllegalArgumentException();
+            }
+        }
+        protected ClassWithMultipleConstructors(int a) {
+            // ok
+        }
+        public String toString() {
+            new ClassWithMultipleConstructors(1, 2, 3);
+            new ClassWithMultipleConstructors(1, 2);
+            return "ClassWithMultipleConstructors";
         }
     }
 

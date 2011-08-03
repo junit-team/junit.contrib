@@ -16,6 +16,7 @@
  */
 package org.junit.contrib.assertthrows.verify;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,6 +29,11 @@ import org.junit.contrib.assertthrows.proxy.ReflectionUtils;
  * @author Thomas Mueller
  */
 public class ExceptionVerifier implements ResultVerifier {
+
+    private static final ThreadLocal<Throwable> LAST_THROWN =
+        new ThreadLocal<Throwable>();
+    private static final ThreadLocal<WeakReference<VerifyingInvocationHandler>> LAST_HANDLER =
+        new ThreadLocal<WeakReference<VerifyingInvocationHandler>>();
 
     private final Class<? extends Exception> expectedExceptionClass;
     private final Exception expectedException;
@@ -66,10 +72,6 @@ public class ExceptionVerifier implements ResultVerifier {
             throw new NullPointerException("The passed exception is null");
         }
         this.expectedExceptionClass = expectedException.getClass();
-        if (expectedExceptionClass == null) {
-            // overcareful
-            throw new NullPointerException("The passed exception class is null");
-        }
         this.expectedException = expectedException;
     }
 
@@ -85,40 +87,42 @@ public class ExceptionVerifier implements ResultVerifier {
      * @throws IllegalArgumentException if it was not possible to create a proxy
      *             for the passed object
      */
-    public static <T> T createVerifyingProxy(final ResultVerifier verifier, final T obj) {
+    public static <T> T createVerifyingProxy(ResultVerifier verifier, T obj) {
         if (obj == null) {
             throw new NullPointerException("The passed object is null");
         }
-        InvocationHandler handler = new InvocationHandler() {
-            private Exception called = new Exception("No method was called on " + obj);
-            public void finalize() {
-                if (called != null) {
-                    called.printStackTrace(System.err);
-                }
-            }
-            public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
-                called = null;
-                while (true) {
-                    Object ret = null;
-                    Throwable thrown = null;
-                    try {
-                        ret = method.invoke(obj, args);
-                    } catch (InvocationTargetException e) {
-                        thrown = e.getTargetException();
-                    }
-                    if (!verifier.verify(ret, thrown, method, args)) {
-                        return ReflectionUtils.getDefaultValue(method.getReturnType());
-                    }
-                }
-            }
-        };
+        verifyLastProxyWasUsed();
+        VerifyingInvocationHandler handler = new VerifyingInvocationHandler(verifier, obj);
+        setLastProxyHandler(handler);
         ProxyFactory factory = ProxyFactory.getFactory(obj.getClass());
         return factory.createProxy(obj, handler);
     }
 
+    /**
+     * Verify that the last proxy was actually used. Calling this method is
+     * optional, as it is automatically verified before creating the next proxy.
+     * Also, wrong usage is detected when the proxy is garbage collected.
+     * However if may make sense to call this method explicitly in a tearDown
+     * method or JUnit 4 Rule. This method is thread-safe, as it uses a
+     * ThreadLocal internally.
+     */
+    public static void verifyLastProxyWasUsed() {
+        WeakReference<VerifyingInvocationHandler> w = LAST_HANDLER.get();
+        if (w != null) {
+            VerifyingInvocationHandler last = w.get();
+            if (last != null) {
+                last.verifyCalled();
+            }
+        }
+    }
+
+    private static void setLastProxyHandler(VerifyingInvocationHandler handler) {
+        WeakReference<VerifyingInvocationHandler> w =
+            new WeakReference<VerifyingInvocationHandler>(handler);
+        LAST_HANDLER.set(w);
+    }
+
     public boolean verify(Object returnValue, Throwable t, Method m, Object... args) {
-        // TODO the exception could possibly be stored in a ThreadLocal,
-        // so it can be requested later on
         if (t != null) {
             // the method did throw an exception
             if (expectedExceptionClass == null) {
@@ -207,6 +211,80 @@ public class ExceptionVerifier implements ResultVerifier {
         }
         buff.append(")");
         return buff.toString();
+    }
+
+    /**
+     * Set the last thrown exception or error for the current thread.
+     *
+     * @param t the exception or error
+     */
+    public static void setLastThrown(Throwable t) {
+        LAST_THROWN.set(t);
+    }
+
+    /**
+     * Get the last thrown exception (if any) or error for the current thread.
+     *
+     * @return the exception or error, or null
+     */
+    public static Throwable getLastThrown() {
+        return LAST_THROWN.get();
+    }
+
+    /**
+     * An invocation handler that calls a result verifier after each method
+     * call.
+     */
+    private static class VerifyingInvocationHandler implements InvocationHandler {
+
+        private final Object obj;
+        private final ResultVerifier verifier;
+        private AssertionError called;
+
+        VerifyingInvocationHandler(ResultVerifier verifier, Object obj) {
+            this.verifier = verifier;
+            this.obj = obj;
+            this.called = new AssertionError(
+                    "A proxy for the class\n" +
+                    obj.getClass().getName() + "\n" +
+                    "was created, but then no overridable method was called on it.\n" +
+                    "See the stack trace for where the proxy was created.");
+        }
+
+        public void verifyCalled() {
+            if (called != null) {
+                AssertionError c = called;
+                called = null;
+                throw c;
+            }
+        }
+
+        public void finalize() {
+            if (called != null) {
+                called.printStackTrace(System.err);
+                called = null;
+            }
+        }
+        public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
+            if ("finalize".equals(method.getName())) {
+                // we _could_ support this method, but then detecting
+                // that no method was called would no longer work
+                return method.invoke(obj, args);
+            }
+            called = null;
+            while (true) {
+                Object ret = null;
+                Throwable thrown = null;
+                try {
+                    ret = method.invoke(obj, args);
+                } catch (InvocationTargetException e) {
+                    thrown = e.getTargetException();
+                }
+                if (!verifier.verify(ret, thrown, method, args)) {
+                    return ReflectionUtils.getDefaultValue(method.getReturnType());
+                }
+            }
+        }
     }
 
 }

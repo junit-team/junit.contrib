@@ -40,6 +40,14 @@ public class CglibProxyFactoryTest {
     }
 
     @Test
+    public void testProxyOnProxy() {
+        final Object p = createProxy(new Object());
+        new AssertThrows() { public void test() {
+            createProxy(p);
+        }};
+    }
+
+    @Test
     public void testJavaUtilRandom() {
         createProxy(new Random()).nextInt(1);
         assertEquals("nextInt = 0", buff.toString());
@@ -68,7 +76,7 @@ public class CglibProxyFactoryTest {
         new AssertThrows(new IllegalArgumentException(
                 "Could not create a new proxy instance for the base class " +
                 PrivateConstructor.class.getName() +
-                " (probably because objenesis is not used)")) {
+                " (probably because Objenesis is not used)")) {
             public void test() {
                 createProxy(PrivateConstructor.getInstance(10), true).toString();
         }};
@@ -122,7 +130,11 @@ public class CglibProxyFactoryTest {
     }
 
     <T> T createProxy(final T obj, boolean forceUsingReflection) {
-        return CglibProxyFactory.getInstance().createProxy(obj, new InvocationHandler() {
+        CglibProxyFactory factory = new CglibProxyFactory();
+        if (forceUsingReflection) {
+            factory.setUseObjenesis(false);
+        }
+        return factory.createProxy(obj, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Exception {
                 buff.append(method.getName());
                 Object o = method.invoke(obj, args);
@@ -130,7 +142,7 @@ public class CglibProxyFactoryTest {
                 methodCallCount++;
                 return o;
             }
-        }, forceUsingReflection);
+        });
     }
 
     /**

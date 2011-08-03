@@ -35,15 +35,21 @@ import java.util.TreeSet;
  */
 public class CompilingProxyFactory extends ProxyFactory {
 
-    private static final CompilingProxyFactory INSTANCE = new CompilingProxyFactory();
-
+    /**
+     * The compiler to use. Implementation note: this field might be set
+     * to null by Tomcat when unloading a web application that uses this proxy
+     * factory.
+     */
     private Compiler compiler = new Compiler();
 
+    /**
+     * A cache of compiled classes. Implementation note: this field might be set
+     * to null by Tomcat when unloading a web application that uses this proxy
+     * factory.
+     */
     private HashMap<Class<?>, Class<?>> proxyMap = new HashMap<Class<?>, Class<?>>();
 
-    public static CompilingProxyFactory getInstance() {
-        return INSTANCE;
-    }
+    private boolean useSystemJavaCompiler = true;
 
     @SuppressWarnings("unchecked")
     public <T> T createProxy(T obj, final InvocationHandler handler) {
@@ -62,6 +68,19 @@ public class CompilingProxyFactory extends ProxyFactory {
         }
     }
 
+    public void setUseSystemJavaCompiler(boolean useSystemJavaCompiler) {
+        this.useSystemJavaCompiler = useSystemJavaCompiler;
+        getCompiler().setUseSystemJavaCompiler(useSystemJavaCompiler);
+    }
+
+    private Compiler getCompiler() {
+        if (compiler == null) {
+            compiler = new Compiler();
+            compiler.setUseSystemJavaCompiler(useSystemJavaCompiler);
+        }
+        return compiler;
+    }
+
     /**
      * Generate a proxy class. The returned class extends the given class.
      *
@@ -71,7 +90,8 @@ public class CompilingProxyFactory extends ProxyFactory {
      *             for the passed class
      */
     public Class<?> getClassProxy(Class<?> c) throws IllegalArgumentException {
-        Class<?> p = proxyMap.get(c);
+        HashMap<Class<?>, Class<?>> map = getProxyMap();
+        Class<?> p = map.get(c);
         if (p != null) {
             return p;
         }
@@ -120,11 +140,12 @@ public class CompilingProxyFactory extends ProxyFactory {
         gen.write(new PrintWriter(sw));
         String code = sw.toString();
         String name = packageName + "." + className;
-        compiler.setSource(name, code);
+        Compiler comp = getCompiler();
+        comp.setSource(name, code);
         // System.out.println(code);
         try {
-            Class<?> pc = compiler.getClass(name);
-            proxyMap.put(c, pc);
+            Class<?> pc = comp.getClass(name);
+            map.put(c, pc);
             return pc;
         } catch (ClassNotFoundException e) {
             IllegalArgumentException ia = new IllegalArgumentException(
@@ -132,6 +153,13 @@ public class CompilingProxyFactory extends ProxyFactory {
             ia.initCause(e);
             throw ia;
         }
+    }
+
+    public HashMap<Class<?>, Class<?>> getProxyMap() {
+        if (proxyMap == null) {
+            proxyMap = new HashMap<Class<?>, Class<?>>();
+        }
+        return proxyMap;
     }
 
     /**
