@@ -46,9 +46,7 @@ import javax.tools.JavaCompiler.CompilationTask;
  * compiled with Java 5. The source code can be switched to Java 6 however. To
  * do that, replace <code>/*#
  * Java 6 #</code> with <code>//#
- * Java 6 #</code>, and <code>//#
- * Java 5 #</code> with <code>/*#
- * Java 5 #</code> before compiling.
+ * Java 6 # before compiling.
  *
  * @author Thomas Mueller
  */
@@ -74,8 +72,7 @@ public class Compiler {
 
     /*# Java 6 #
     private JavaCompiler javaCompiler;
-    //*/
-    //# Java 5 #
+    /*/
     private Object javaCompiler;
     //*/
 
@@ -91,8 +88,7 @@ public class Compiler {
             try {
                 /*# Java 6 #
                 javaCompiler = ToolProvider.getSystemJavaCompiler();
-                //*/
-                //# Java 5 #
+                /*/
                 javaCompiler = ReflectionUtils.callStaticMethod(
                         "javax.tools.ToolProvider.getSystemJavaCompiler");
                 //*/
@@ -233,18 +229,6 @@ public class Compiler {
                 "-d", compileDir,
                 "-encoding", "UTF-8");
 
-        //# Java 5 #
-        Object compiler = javaCompiler;
-        Object fileManager = ReflectionUtils.callMethod(compiler, "getStandardFileManager",
-                null, null, Charset.forName("UTF-8"));
-        Object compilationUnits = ReflectionUtils.callMethod(fileManager, "getJavaFileObjects",
-                (Object) new File[] { javaFile });
-        Object task = ReflectionUtils.callMethod(compiler, "getTask",
-                writer, fileManager, null, options, null, compilationUnits);
-        ReflectionUtils.callMethod(task, "call");
-        ReflectionUtils.callMethod(fileManager, "close");
-        //*/
-
         /*# Java 6 #
         JavaCompiler compiler = (JavaCompiler) javaCompiler;
         StandardJavaFileManager fileManager = compiler.
@@ -255,6 +239,16 @@ public class Compiler {
                 writer, fileManager, null, options, null, compilationUnits);
         task.call();
         fileManager.close();
+        /*/
+        Object compiler = javaCompiler;
+        Object fileManager = ReflectionUtils.callMethod(compiler, "getStandardFileManager",
+                null, null, Charset.forName("UTF-8"));
+        Object compilationUnits = ReflectionUtils.callMethod(fileManager, "getJavaFileObjects",
+                (Object) new File[] { javaFile });
+        Object task = ReflectionUtils.callMethod(compiler, "getTask",
+                writer, fileManager, null, options, null, compilationUnits);
+        ReflectionUtils.callMethod(task, "call");
+        ReflectionUtils.callMethod(fileManager, "close");
         //*/
 
         String err = writer.toString();
