@@ -28,11 +28,25 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
+/*# Java 6 #
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
+import javax.tools.JavaCompiler.CompilationTask;
+//*/
 
 /**
  * This class allows to convert source code to a class. It uses one class loader
  * per class, and internally uses <code>javax.tools.JavaCompiler</code> if
  * available, and <code>com.sun.tools.javac.Main</code> otherwise.
+ * <p>
+ * Implementation note: this class is uses reflection to try to load a
+ * <code>javax.tools.JavaCompiler</code>, which also runs on Java 5, and can be
+ * compiled with Java 5. The source code can be switched to Java 6 however. To
+ * do that, replace <code>/*#
+ * Java 6 #</code> with <code>//#
+ * Java 6 # before compiling.
  *
  * @author Thomas Mueller
  */
@@ -56,8 +70,11 @@ public class Compiler {
 
     private Class<?> javacSun;
 
-    // private static final JavaCompiler javaCompiler;
+    /*# Java 6 #
+    private JavaCompiler javaCompiler;
+    /*/
     private Object javaCompiler;
+    //*/
 
     private String compileDir = System.getProperty("java.io.tmpdir", ".");
 
@@ -66,17 +83,19 @@ public class Compiler {
     }
 
     private void initCompiler() {
-        Object comp = null;
+        javaCompiler = null;
         if (useSystemJavaCompiler) {
             try {
-                // comp = ToolProvider.getSystemJavaCompiler();
-                comp = ReflectionUtils.callStaticMethod(
+                /*# Java 6 #
+                javaCompiler = ToolProvider.getSystemJavaCompiler();
+                /*/
+                javaCompiler = ReflectionUtils.callStaticMethod(
                         "javax.tools.ToolProvider.getSystemJavaCompiler");
+                //*/
             } catch (Exception e) {
                 // ignore
             }
         }
-        javaCompiler = comp;
         Class<?> javac;
         try {
             javac = Class.forName("com.sun.tools.javac.Main");
@@ -210,29 +229,27 @@ public class Compiler {
                 "-d", compileDir,
                 "-encoding", "UTF-8");
 
-        // JavaCompiler compiler = (JavaCompiler) javaCompiler;
+        /*# Java 6 #
+        JavaCompiler compiler = (JavaCompiler) javaCompiler;
+        StandardJavaFileManager fileManager = compiler.
+                getStandardFileManager(null, null, Charset.forName("UTF-8"));
+        Iterable<? extends JavaFileObject> compilationUnits =
+            fileManager.getJavaFileObjects(javaFile);
+        CompilationTask task = compiler.getTask(
+                writer, fileManager, null, options, null, compilationUnits);
+        task.call();
+        fileManager.close();
+        /*/
         Object compiler = javaCompiler;
-
-        // StandardJavaFileManager fileManager = compiler.
-        //         getStandardFileManager(null, null, Charset.forName("UTF-8"));
         Object fileManager = ReflectionUtils.callMethod(compiler, "getStandardFileManager",
                 null, null, Charset.forName("UTF-8"));
-
-        // Iterable<? extends JavaFileObject> compilationUnits =
-        //     fileManager.getJavaFileObjects(javaFile);
         Object compilationUnits = ReflectionUtils.callMethod(fileManager, "getJavaFileObjects",
                 (Object) new File[] { javaFile });
-
-        // Task task = compiler.getTask(
-        //         writer, fileManager, null, options, null, compilationUnits);
         Object task = ReflectionUtils.callMethod(compiler, "getTask",
                 writer, fileManager, null, options, null, compilationUnits);
-
-        // task.call();
         ReflectionUtils.callMethod(task, "call");
-
-        // fileManager.close();
         ReflectionUtils.callMethod(fileManager, "close");
+        //*/
 
         String err = writer.toString();
         throwSyntaxError(err);

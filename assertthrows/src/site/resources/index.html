@@ -1,12 +1,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head><meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<title>
-JUnit Contrib - AssertThrows
-</title>
-<style>
-body { 
+<title>JUnit Contrib - AssertThrows</title>
+<style type="text/css">
+body {
+    margin: 0 auto;
+    max-width: 640px;
+    margin-top: 1.0em;
     font: 13px/1.4 Arial, sans-serif;
+}
+h1 { 
+    margin-bottom: 0px; 
 }
 a {
     text-decoration: none;
@@ -18,25 +22,43 @@ pre {
     background-color: #eee;
     padding: 6px;
 }
+.button {
+    color: #fff;
+    font-size: 12px;
+    border: solid 1px;
+    border-color: #0a0;
+    background-color: #080;
+    background: -moz-linear-gradient(top,  #0c0,  #080);
+    background: -webkit-gradient(linear, left top, left bottom, from(#0c0), to(#080));
+    padding: 5px;
+    border-radius: 8px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+}
+.button a {
+    color: #fff;
+}
 </style>
 </head>
+
 <body>
+
 <h1>
 <span style="color: #33ff33">J</span><span style="color: #cc0000">U</span>nit Contrib -
 AssertThrows</h1>
-<p>
-Thomas Mueller
-</p>
-
-<hr/>
+<div><i>Testing for Expected Exceptions</i></div>
 
 <p>
-<span  style="border: solid 1px; padding: 4px;">
-This is an alpha release. The package names, API, and features may change in a future release.
-</span>
+This JUnit extension allows you to test for exceptions as you would test for other conditions, often as:
 </p>
+<pre>
+assertThrows(emptyList).get(0);
+</pre>
 
 <h2>Contents</h2>
+<p style="border: solid 1px; padding: 4px;">
+This is an alpha release. The package names, API, and features may change in a future release.
+</p>
 
 <ul><li><a href="#TheProblem">The Problem</a>
 </li><li><a href="#Annotation">Annotation</a>
@@ -44,7 +66,9 @@ This is an alpha release. The package names, API, and features may change in a f
 </li><li><a href="#Proxy">Proxy</a>
 </li><li><a href="#AnonymousClass">Anonymous Class</a>
 </li><li><a href="#LastThrown">Getting the Last Throwable</a>
+</li><li><a href="#Usage">Usage</a>
 </li><li><a href="#Dependencies">Dependencies</a>
+</li><li><a href="#License">License</a>
 </li><li><a href="#KnownProblems">Known Problems</a>
 </li></ul>
 
@@ -172,7 +196,7 @@ As an example, the following code will throw an exception saying
 that no method was called on the proxy:
 </p>
 <pre>
-List<String> list = new ArrayList<String>();
+List&lt;String&gt; list = new ArrayList&lt;String&gt;();
 assertThrows(list);
 assertThrows(list).get(0);
 </pre>
@@ -234,6 +258,49 @@ Please note even thought this is a static method, it is multi-threading save bec
 it uses a <code>ThreadLocal</code> variable internally.
 </p>
 
+<h2 id="Usage">Usage</h2>
+<p>
+To use this tool, download add the <code>.jar</code> file to your project.
+A minimal test case is:
+</p>
+<pre>
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+import org.junit.contrib.assertthrows.AssertThrows;
+import static org.junit.contrib.assertthrows.AssertThrows.*;
+public class HelloAssertThrows {
+    @Test
+    public void test() {
+        final List&lt;String&gt; emptyList = new ArrayList&lt;String&gt;();
+        assertThrows(emptyList).get(0);
+        new AssertThrows() { public void test() {
+            emptyList.get(0);
+        }};
+    }
+}
+</pre>
+<h3>Using Maven</h3>
+<p>
+The jar file is not yet in a Maven central repository, but you can build and deploy it locally if you wish.
+To do that, first download the <code>.zip</code> or <code>.tar.gz</code> file, and build it using: 
+</p>
+<pre>
+cd assertthrows
+mvn clean install
+</pre>
+<p>
+Then use the following dependency:
+</p>
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;org.junit.contrib&lt;/groupId&gt;
+    &lt;artifactId&gt;junit-assertthrows&lt;/artifactId&gt;
+    &lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</pre>
+
 <h2 id="Dependencies">Dependencies</h2>
 <p>
 This project does not required additional libraries. However, if you want to
@@ -255,6 +322,11 @@ To add the dependencies to a Maven project, use:
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;
 </pre>
+
+<h2 id="License">License</h2>
+<p>
+This project uses the <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License Version 2.0</a>.
+</p>
 
 <h2 id="KnownProblems">Known Problems</h2>
 <p>
