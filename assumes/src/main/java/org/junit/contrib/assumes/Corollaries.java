@@ -1,9 +1,22 @@
+/*
+ * The copyright holders of this work license this file to You under
+ * the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License.  You may obtain a copy of
+ * the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.junit.contrib.assumes;
 
-import org.junit.Ignore;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
-import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
@@ -25,7 +38,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -33,11 +45,11 @@ import java.util.Set;
  */
 public class Corollaries extends BlockJUnit4ClassRunner {
 
-    private Sorter fSorter= Sorter.NULL;
+    private Sorter fSorter = Sorter.NULL;
 
     private List<FrameworkMethod> fFilteredChildren;
 
-    private RunnerScheduler fScheduler= new RunnerScheduler() {
+    private RunnerScheduler fScheduler = new RunnerScheduler() {
         public void schedule(Runnable childStatement) {
             childStatement.run();
         }
@@ -59,9 +71,10 @@ public class Corollaries extends BlockJUnit4ClassRunner {
 
     @Override
     public void sort(Sorter sorter) {
-        fSorter= sorter;
-        for (FrameworkMethod each : getFilteredChildren())
+        fSorter = sorter;
+        for (FrameworkMethod each : getFilteredChildren()) {
             sortChild(each);
+        }
         Collections.sort(getFilteredChildren(), comparator());
         assumptionSort(getFilteredChildren());
     }
@@ -78,20 +91,6 @@ public class Corollaries extends BlockJUnit4ClassRunner {
         };
     }
 
-    @Override
-    public void run(final RunNotifier notifier) {
-        EachTestNotifier testNotifier= new EachTestNotifier(notifier, getDescription());
-        try {
-            Statement statement= classBlock(notifier);
-            statement.evaluate();
-        } catch (AssumptionViolatedException e) {
-            testNotifier.fireTestIgnored();
-        } catch (StoppedByUserException e) {
-            throw e;
-        } catch (Throwable e) {
-            testNotifier.addFailure(e);
-        }
-    }
     /**
      * Returns a {@link Statement}: Call {@link #runChild(Object, RunNotifier)}
      * on each object returned by {@link #getChildren()} (subject to any imposed
@@ -124,12 +123,13 @@ public class Corollaries extends BlockJUnit4ClassRunner {
             }
         };
         notifier.addListener(l);
-        for (final FrameworkMethod each : getFilteredChildren())
-             fScheduler.schedule(new Runnable() {
+        for (final FrameworkMethod each : getFilteredChildren()) {
+            fScheduler.schedule(new Runnable() {
                 public void run() {
                     Corollaries.this.runChild(each, notifier, invalidAssumptions);
                 }
             });
+        }
         fScheduler.finished();
     }
 
@@ -137,7 +137,7 @@ public class Corollaries extends BlockJUnit4ClassRunner {
         Assumes assumptions = method.getAnnotation(Assumes.class);
         boolean invalidAssumption = false;
         if (assumptions != null) {
-            for (String assumption: assumptions.value()) {
+            for (String assumption : assumptions.value()) {
                 if (invalidAssumptions.contains(assumption)) {
                     invalidAssumption = true;
                     break;
@@ -180,29 +180,30 @@ public class Corollaries extends BlockJUnit4ClassRunner {
                 }
             }
         }
-        Collections.sort(getFilteredChildren(), new AssumptionComparator());
     }
 
     @Override
     public Description getDescription() {
-        Description description= Description.createSuiteDescription(getName(),
+        Description description = Description.createSuiteDescription(getName(),
                 getTestClass().getAnnotations());
-        for (FrameworkMethod child : getFilteredChildren())
+        for (FrameworkMethod child : getFilteredChildren()) {
             description.addChild(describeChild(child));
+        }
         return description;
     }
 
     public void filter(Filter filter) throws NoTestsRemainException {
         for (Iterator<FrameworkMethod> iter = getFilteredChildren().iterator(); iter.hasNext(); ) {
             FrameworkMethod each = iter.next();
-            if (shouldRun(filter, each))
+            if (shouldRun(filter, each)) {
                 try {
                     filter.apply(each);
                 } catch (NoTestsRemainException e) {
                     iter.remove();
                 }
-            else
+            } else {
                 iter.remove();
+            }
         }
         if (getFilteredChildren().isEmpty()) {
             throw new NoTestsRemainException();
@@ -219,35 +220,6 @@ public class Corollaries extends BlockJUnit4ClassRunner {
      */
     public void setScheduler(RunnerScheduler scheduler) {
         this.fScheduler = scheduler;
-    }
-
-    private class AssumptionComparator implements Comparator<FrameworkMethod> {
-
-        public int compare(FrameworkMethod o1, FrameworkMethod o2) {
-            if (assumed(o2.getAnnotation(Assumes.class), o1.getName())) {
-                if (!assumed(o1.getAnnotation(Assumes.class), o2.getName())) {
-                    return -1;
-                }
-            } else {
-                if (assumed(o1.getAnnotation(Assumes.class), o2.getName())) {
-                    return 1;
-                }
-            }
-            return 0;
-        }
-
-        private boolean assumed(Assumes assumes, String predicate) {
-            if (assumes == null) {
-                return false;
-            }
-            for (String s : assumes.value()) {
-                if (s.equals(predicate)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
     }
 
 }
