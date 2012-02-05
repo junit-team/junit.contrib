@@ -3,8 +3,8 @@ package org.junit.contrib.matchers;
 /**
  * Created by IntelliJ IDEA.
  * User: tibor17
- * Date: 2.12.2011
- * Time: 18:51
+ * Date: 27.11.2011
+ * Time: 19:08
  */
-public class TestIsThrowable {
+public class InternalDescription {
 }

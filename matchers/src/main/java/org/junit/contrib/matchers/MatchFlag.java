@@ -37,6 +37,7 @@ public enum MatchFlag {
     private final String expression;
 
     private MatchFlag(String expression, int flag) {
+
         this.flag = flag;
         this.expression = expression;
     }

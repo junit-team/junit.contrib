@@ -18,11 +18,11 @@ import org.hamcrest.BaseDescription;
 import org.hamcrest.Matcher;
 
 /**
- * The purpose of this class is an internal use in {@link IsThrowable}, when combining expected exception to throw by
- * a block of code together with a certain message matching the expectations of the matcher {@link IsThrowable}.
+ * The purpose of this class is an internal use in {@link IsThrowing}, when combining expected exception to throw by
+ * a block of code together with a certain message matching the expectations of the matcher {@link IsThrowing}.
  * @author Tibor17
  * @version 0.1
- * @see org.junit.contrib.matchers.IsThrowable
+ * @see IsThrowing
  * @since 0.1, Sep 28, 2011, 11:26:00 AM
  */
 abstract class ThrownMessageMatcher {
@@ -44,7 +44,7 @@ abstract class ThrownMessageMatcher {
     protected abstract boolean isMatching(Throwable thrown);
     protected abstract boolean hasNullMessage(Throwable thrown);
     protected abstract String getActualMessage(Throwable thrown);
-    protected abstract Matcher<?> getExpectedMatcher();
+    protected abstract Matcher<? extends CharSequence> getExpectedMatcher();
     protected abstract String getExpectedMessage();
 
     final String createErrorMessage(Throwable thrown) {
@@ -69,6 +69,7 @@ abstract class ThrownMessageMatcher {
                     ++i;
                     msg.append(c);
                 }
+                @Override public String toString() { return msg.toString(); }
             });
 
             if (!startsThat[0])
