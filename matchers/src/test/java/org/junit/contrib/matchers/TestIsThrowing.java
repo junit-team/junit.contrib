@@ -474,8 +474,7 @@ public final class TestIsThrowing {
     }
 
     @Test
-    public void matchExceptionWithMessage$NegativeTest$2() {//todo (exceptions and messages by a matcher) by malo obsahovat len actual: exception.toString() alebo null
-        //todo odstranit java.lang.NullPointerException should be -ked sa matches metoda nevola
+    public void matchExceptionWithMessage$NegativeTest$2() {
         expectedExceptionRule.expect(AssertionError.class);
         expectedExceptionRule.expectMessage("Expected: is throwing ((type assignable to java.lang.IllegalArgumentException " +
                 "or type assignable to java.lang.NullPointerException) " +
@@ -496,7 +495,6 @@ public final class TestIsThrowing {
 
     @Test
     public void matchExceptionWithMessage$NegativeTest$3() {
-        //todo odstranit white double space "  message"
         expectedExceptionRule.expect(AssertionError.class);
         expectedExceptionRule.expectMessage("Expected: is throwing ((type assignable to java.lang.IllegalArgumentException " +
                 "or type assignable to java.lang.NullPointerException) and localized message like \"non-null value\")\n" +
@@ -515,7 +513,7 @@ public final class TestIsThrowing {
     }
 
     @Test
-    public void matchExceptionWithMessage$NegativeTest$4() { //todo
+    public void matchExceptionWithMessage$NegativeTest$4() {
         expectedExceptionRule.expect(AssertionError.class);
         expectedExceptionRule.expectMessage("Expected: is throwing ((type assignable to java.lang.IllegalArgumentException " +
                 "or type assignable to java.lang.NullPointerException) " +

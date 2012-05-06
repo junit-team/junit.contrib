@@ -25,7 +25,7 @@ import org.hamcrest.Matcher;
  * @see org.junit.contrib.matchers.IsThrowing
  * @since 0.1, 19.2.2012, 0:04
  */
-public interface IThrownMessage<V, A extends AbstractCallable<V>> {
+public interface IIsThrowingMessage<V, A extends AbstractCallable<V>> extends Matcher<A> {
     Matcher<A> withMessage(String expectedMessage);
     Matcher<A> andMessage(Matcher<String> matchWith);
     Matcher<A> andMessage(IsRegex<CharSequence> regex);

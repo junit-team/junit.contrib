@@ -218,7 +218,7 @@ import static org.junit.contrib.matchers.IsAssignableTo.assignableToThrowable;
  * @since 0.1, Sep 15, 2011, 10:33:33 AM
  */
 public class IsThrowing<V, B extends AbstractCallable<V>>
-        extends TypeSafeMatcher<B> implements IThrownMessage<V, B>, IThrownCallable<V> {
+        extends TypeSafeMatcher<B> implements IIsThrowingMessage<V, B>, IThrownCallable<V> {
     @SuppressWarnings("unchecked")
     private static final Class<? extends Throwable>[] ALL_THROWABLE = new Class[]{Throwable.class};
 
@@ -550,37 +550,37 @@ public class IsThrowing<V, B extends AbstractCallable<V>>
     }
 
     @org.hamcrest.Factory
-    public static <A extends AbstractCallable<Void>> IsThrowing<Void, A> throwing(final Class<? extends Throwable>... expectedExceptions) {
-        return new IsThrowing<Void, A>(Operation.THROWING, true, false, expectedExceptions);//vsetko okrem navr hodnoty
+    public static <A extends AbstractCallable<Void>> IIsThrowingMessage<Void, A> throwing(final Class<? extends Throwable>... expectedExceptions) {
+        return new IsThrowing<Void, A>(Operation.THROWING, true, false, expectedExceptions);
     }
 
     @org.hamcrest.Factory
     public static <V, A extends AbstractCallable<V>> IsThrowing<V, A> throwing(final Matcher<Class<? extends Throwable>> expectedExceptions) {
-        return new IsThrowing<V, A>(true, false, expectedExceptions);//vsetko
+        return new IsThrowing<V, A>(true, false, expectedExceptions);
     }
 
     @org.hamcrest.Factory
     public static <V, A extends AbstractCallable<V>> IsThrowing<V, A> throwingDeeply(final Matcher<Class<? extends Throwable>> expectedExceptions) {
-        return new IsThrowing<V, A>(true, true, expectedExceptions);//vsetko
+        return new IsThrowing<V, A>(true, true, expectedExceptions);
     }
 
     @org.hamcrest.Factory
-    public static <V> Matcher<AbstractCallable<V>> throwing(final Matcher<? extends Throwable> expectedExceptions) {//vsetko
+    public static <V> Matcher<AbstractCallable<V>> throwing(final Matcher<? extends Throwable> expectedExceptions) {
         return new IsThrowing<V, AbstractCallable<V>>(false, expectedExceptions);
     }
 
     @org.hamcrest.Factory
-    public static <V> Matcher<AbstractCallable<V>> throwingDeeply(final Matcher<? extends Throwable> expectedExceptions) {//vsetko
+    public static <V> Matcher<AbstractCallable<V>> throwingDeeply(final Matcher<? extends Throwable> expectedExceptions) {
         return new IsThrowing<V, AbstractCallable<V>>(true, expectedExceptions);
     }
 
     @org.hamcrest.Factory
-    public static <A extends AbstractCallable<Void>> IsThrowing<Void, A> notThrowing(final Class<? extends Throwable>... exceptionsComplement) { //vsetko
+    public static <A extends AbstractCallable<Void>> IsThrowing<Void, A> notThrowing(final Class<? extends Throwable>... exceptionsComplement) {
         return new IsThrowing<Void, A>(Operation.NOT_THROWING, false, false, exceptionsComplement);
     }
 
     @org.hamcrest.Factory
-    public static <A extends AbstractCallable<Void>> IsThrowing<Void, A> throwingDeeply(final Class<? extends Throwable>... expectedExceptions) { //vsetko okrem navr hod
+    public static <A extends AbstractCallable<Void>> IIsThrowingMessage<Void, A> throwingDeeply(final Class<? extends Throwable>... expectedExceptions) {
         return new IsThrowing<Void, A>(Operation.THROWING_DEEPLY, true, true, expectedExceptions);
     }
 
