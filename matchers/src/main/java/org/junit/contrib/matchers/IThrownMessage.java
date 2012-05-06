@@ -14,14 +14,19 @@
  */
 package org.junit.contrib.matchers;
 
+import org.hamcrest.Matcher;
+
 /**
- * The purpose of this private package enum is to specify
- * four post operations callable after successful regular
- * expression match in {@link IsRegex}.
+ * This interface specifies post operations applied after successful matcher {@link IsThrowing}.
  * <p/>
+ *
  * @author tibor17
  * @version 0.1
- * @see org.junit.contrib.matchers.IsRegex
- * @since 0.1, 26.12.2011, 11:22
+ * @see org.junit.contrib.matchers.IsThrowing
+ * @since 0.1, 19.2.2012, 0:04
  */
-enum ResultType { GROUP, START, END, REGION }
+public interface IThrownMessage<V, A extends AbstractCallable<V>> {
+    Matcher<A> withMessage(String expectedMessage);
+    Matcher<A> andMessage(Matcher<String> matchWith);
+    Matcher<A> andMessage(IsRegex<CharSequence> regex);
+}

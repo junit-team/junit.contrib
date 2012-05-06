@@ -47,7 +47,7 @@ abstract class ThrownMessageMatcher {
     protected abstract Matcher<? extends CharSequence> getExpectedMatcher();
     protected abstract String getExpectedMessage();
 
-    final String createErrorMessage(Throwable thrown) {
+    final String createErrorMessage(final Throwable thrown) {
         final StringBuilder msg = new StringBuilder(128);
 
         if (hasNullMessage(thrown)) msg.append(beforeNullActual);

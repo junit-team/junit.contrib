@@ -15,13 +15,14 @@
 package org.junit.contrib.matchers;
 
 /**
- * The purpose of this private package enum is to specify
- * four post operations callable after successful regular
- * expression match in {@link IsRegex}.
+ * The purpose of this test is to test a functionality of
+ * {@link org.junit.contrib.matchers.IsRegex} matcher and to explain the use.
  * <p/>
+ *
  * @author tibor17
- * @version 0.1
+ * @version ${VERSION}
  * @see org.junit.contrib.matchers.IsRegex
- * @since 0.1, 26.12.2011, 11:22
+ * @since ${VERSION}, 26.2.2012, 20:38
  */
-enum ResultType { GROUP, START, END, REGION }
+public class Block {
+}

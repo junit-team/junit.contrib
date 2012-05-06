@@ -17,10 +17,11 @@ package org.junit.contrib.matchers;
 import java.util.regex.Pattern;
 
 /**
- * The purpose of this enum type is to declare Pattern's integer constants, {@see java.util.regex.Patern}, in this num form.
+ * The purpose of this enum type is to declare Pattern integer constants in this num form.
+ * <p> See Equivalent Embedded Flag Expression in {@link java.util.regex.Pattern}.
  * @author Tibor17
  * @version 0.1
- * @see {@link java.util.regex.Pattern} Equivalent Embedded Flag Expression
+ * @see Pattern
  * @since 0.1, Oct 2, 2011, 7:38:45 PM
  */
 public enum MatchFlag {
@@ -37,7 +38,6 @@ public enum MatchFlag {
     private final String expression;
 
     private MatchFlag(String expression, int flag) {
-
         this.flag = flag;
         this.expression = expression;
     }
@@ -63,5 +63,10 @@ public enum MatchFlag {
 
     int getJavaFlag() {
         return flag;
+    }
+
+    @Override
+    public String toString() {
+        return expression == null ? name() : expression;
     }
 }

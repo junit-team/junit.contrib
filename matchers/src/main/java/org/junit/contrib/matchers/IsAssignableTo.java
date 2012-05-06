@@ -25,16 +25,13 @@ import static org.junit.Assert.assertNotNull;
 public class IsAssignableTo<A extends Class<?>, E extends Class<?>> extends TypeSafeMatcher<A> {
     private final E superOrSameType;
 
-    private A subOrSameType;
-
     public IsAssignableTo(final E superOrSameType) {
         assertNotNull("expected 'superOrSameType' must not be null", superOrSameType);
         this.superOrSameType = superOrSameType;
     }
 
     @Override
-    public boolean matchesSafely(final A a) {
-        subOrSameType = a;
+    public boolean matchesSafely(final A subOrSameType) {
         return superOrSameType.isAssignableFrom(subOrSameType);
     }
 
@@ -46,16 +43,19 @@ public class IsAssignableTo<A extends Class<?>, E extends Class<?>> extends Type
 
     @org.hamcrest.Factory
     public static <T> Matcher<Class<T>> assignableTo(final Class<T> superOrSameType) {
+        assertNotNull("superOrSameType is null", superOrSameType);
         return new IsAssignableTo<Class<T>, Class<T>>(superOrSameType);
     }
 
     @org.hamcrest.Factory
     public static Matcher<Class<?>> assignableToAny(final Class<?> superOrSameType) {
+        assertNotNull("superOrSameType is null", superOrSameType);
         return new IsAssignableTo<Class<?>, Class<?>>(superOrSameType);
     }
 
     @org.hamcrest.Factory
     public static Matcher<Class<? extends Throwable>> assignableToThrowable(final Class<? extends Throwable> superOrSameType) {
+        assertNotNull("superOrSameType is null", superOrSameType);
         return new IsAssignableTo<Class<? extends Throwable>, Class<? extends Throwable>>(superOrSameType);
     }
 }

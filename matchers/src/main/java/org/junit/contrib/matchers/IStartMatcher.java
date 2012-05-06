@@ -14,15 +14,72 @@
  */
 package org.junit.contrib.matchers;
 
+import org.hamcrest.Matcher;
+
 /**
- * The purpose of this test is to test a functionality of
- * {@link org.junit.contrib.matchers.IsRegex} matcher and to explain the use.
- * <p/>
- *
+ * Specifies the start position of regular expression matches.
  * @author tibor17
- * @version ${VERSION}
+ * @version 0.1
  * @see org.junit.contrib.matchers.IsRegex
- * @since ${VERSION}, 25.12.2011, 1:35
+ * @since 0.1, 25.12.2011, 1:35
  */
-public interface IStartMatcher {
+public interface IStartMatcher<T extends CharSequence> extends Matcher<T> {
+    /**
+     * Matches the start index of the subsequence captured by the given group during the previous
+     * <tt>match</tt> or <tt>like</tt> operation.
+     * <p>
+     * The integer matcher represents expected range of position. The first method parameter
+     * specifies a group of given regular expression to search matching start position. If given
+     * <tt>group</tt> is negative, then the {@link AssertionError} is thrown.
+     * @param group a group in regular expression
+     * @param index expected range of start position (inclusive)
+     * @throws AssertionError
+     * if given <tt>group</tt> is negative,
+     * <tt>index</tt> is null
+     * ; or if not applicable when result matcher already specified
+     * @return opposite matcher
+     * @see java.util.regex.Matcher#start(int)
+     */
+    IEndMatcher<T> startsAt(int group, Matcher<Integer> index);
+
+    /**
+     * Matches the start index of the subsequence captured during the previous
+     * <tt>match</tt> or <tt>like</tt> operation.
+     * <p>
+     * The integer matcher represents expected range of start position with zero group.
+     * @param index expected range of start position (inclusive)
+     * @return opposite matcher
+     * @throws AssertionError
+     * <tt>index</tt> is null
+     * ; or if not applicable when result matcher already specified
+     */
+    IEndMatcher<T> startsAt(Matcher<Integer> index);
+
+    /**
+     * Matches the start index of the subsequence, captured by the given group during the previous
+     * <tt>match</tt> or <tt>like</tt> operation, equal to the given index.
+     * <p>
+     * The first method parameter specifies a group of given regular expression to search matching
+     * start position. If given <tt>group</tt> is negative, then the {@link AssertionError} is thrown.
+     * @param group a group in regular expression
+     * @param index expected range of start position (inclusive)
+     * @throws AssertionError
+     * if given <tt>group</tt> is negative
+     * ; or if not applicable when result matcher already specified
+     * @return opposite matcher
+     * @see java.util.regex.Matcher#start(int)
+     */
+    IEndMatcher<T> startsAt(int group, int index);
+
+    /**
+     * Matches the start index of the subsequence, captured during the previous
+     * <tt>match</tt> or <tt>like</tt> operation, equal to the given index.
+     * <p>
+     * The integer matcher represents expected range of start position with zero group.
+     * @param index expected range of start position (inclusive)
+     * @return opposite matcher
+     * @throws AssertionError
+     * if not applicable when result matcher already specified
+     */
+    IEndMatcher<T> startsAt(int index);
 }
