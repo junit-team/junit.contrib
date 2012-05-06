@@ -15,14 +15,30 @@
 package org.junit.contrib.matchers;
 
 /**
- * The purpose of this test is to test a functionality of
- * {@link org.junit.contrib.matchers.IsRegex} matcher and to explain the use.
+ * The skeleton class where the {@link #run()} must be implemented.
  * <p/>
- *
  * @author tibor17
- * @version ${VERSION}
- * @see org.junit.contrib.matchers.IsRegex
- * @since ${VERSION}, 26.2.2012, 20:38
+ * @version 0.1
+ * @see org.junit.contrib.matchers.IsThrowing
+ * @since 0.1, 26.2.2012, 20:38
  */
-public class Block {
+public abstract class Block<V> extends AbstractCallable<V> {
+    Block(boolean hasReturnValue, V fallback) {
+        super(hasReturnValue, fallback);
+    }
+
+    Block(boolean hasReturnValue) {
+        super(hasReturnValue);
+    }
+
+    public Block() {
+        super(false);
+    }
+
+    protected abstract void run() throws Exception;
+
+    @Override V call1() throws Exception {
+        run();
+        return null;
+    }
 }

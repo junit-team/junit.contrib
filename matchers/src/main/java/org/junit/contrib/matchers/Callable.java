@@ -15,14 +15,23 @@
 package org.junit.contrib.matchers;
 
 /**
- * The purpose of this test is to test a functionality of
- * {@link org.junit.contrib.matchers.IsRegex} matcher and to explain the use.
+ * The skeleton class where the {@link #call()} must be implemented.
  * <p/>
- *
  * @author tibor17
- * @version ${VERSION}
- * @see org.junit.contrib.matchers.IsRegex
- * @since ${VERSION}, 26.2.2012, 20:39
+ * @version 0.1
+ * @see org.junit.contrib.matchers.IsThrowing
+ * @since 0.1, 26.2.2012, 20:39
  */
-public class Callable {
+public abstract class Callable<V> extends Block<V> implements java.util.concurrent.Callable<V> {
+    public Callable() {
+        super(true);
+    }
+
+    public Callable(V fallback) {
+        super(true, fallback);
+    }
+
+    @Override final V call1() throws Exception {
+        return call();
+    }
 }

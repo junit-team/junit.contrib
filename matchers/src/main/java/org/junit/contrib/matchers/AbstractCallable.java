@@ -15,14 +15,48 @@
 package org.junit.contrib.matchers;
 
 /**
- * The purpose of this test is to test a functionality of
- * {@link org.junit.contrib.matchers.IsRegex} matcher and to explain the use.
+ * A skeleton class for {@link Block} and {@link Callable}.
  * <p/>
- *
  * @author tibor17
- * @version ${VERSION}
- * @see org.junit.contrib.matchers.IsRegex
- * @since ${VERSION}, 26.2.2012, 20:37
+ * @version 0.1
+ * @see org.junit.contrib.matchers.IsThrowing
+ * @since 0.1, 26.2.2012, 20:37
  */
-public class AbstractCallable {
+public abstract class AbstractCallable<V> {
+    private final boolean hasReturnValue;
+    private V returned;
+
+    final V fallback;
+    boolean isSucceeded;
+    Throwable throwable;
+
+    AbstractCallable(boolean hasReturnValue) {
+        this.hasReturnValue = hasReturnValue;
+        fallback = null;
+    }
+
+    AbstractCallable(boolean hasReturnValue, V fallback) {
+        this.hasReturnValue = hasReturnValue;
+        this.fallback = fallback;
+    }
+
+    abstract V call1() throws Exception;
+
+    final V evaluate() {
+        isSucceeded = true;
+        try {
+            returned = call1();
+            return returned;
+        } catch (final Throwable throwable) {
+            isSucceeded = false;
+            this.throwable = throwable;
+            return fallback;
+        }
+    }
+
+    @Override final public String toString() {
+        return isSucceeded
+                ? ("block returned " + (hasReturnValue ? (returned == null ? "null" : returned.toString()) : "normally"))
+                : ("block threw " + throwable.toString());
+    }
 }
