@@ -31,8 +31,11 @@ public class WithExtendedParameterSourcesTest {
 
     @RunWith(Theories.class)
     public static class ShouldFilterNull {
-        @DataPoint public static final String NULL = null;
-        @DataPoint public static final String A = "a";
+        @DataPoint
+        public static String NULL = null;
+
+        @DataPoint
+        public static String A = "a";
 
         @Theory(nullsAccepted = false)
         public void allStringsAreNonNull(String s) {
@@ -49,7 +52,8 @@ public class WithExtendedParameterSourcesTest {
     public static class DataPointArrays {
         public static String log = "";
 
-        @DataPoints public static final String[] STRINGS = new String[] { "A", "B" };
+        @DataPoints
+        public static String[] STRINGS = new String[] { "A", "B" };
 
         @Theory
         public void addToLog(String string) {
@@ -122,7 +126,8 @@ public class WithExtendedParameterSourcesTest {
     public static class DataPointArrayToBeUsedForWholeParameter {
         public static String log = "";
 
-        @DataPoint public static final String[] STRINGS = new String[] { "A", "B" };
+        @DataPoint
+        public static String[] STRINGS = new String[] { "A", "B" };
 
         @Theory
         public void addToLog(String[] strings) {

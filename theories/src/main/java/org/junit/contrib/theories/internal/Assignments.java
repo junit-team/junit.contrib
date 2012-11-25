@@ -29,8 +29,7 @@ public class Assignments {
      * Returns a new assignment list for {@code testMethod}, with no params assigned.
      */
     public static Assignments allUnassigned(Method testMethod, TestClass testClass) throws Exception {
-        List<ParameterSignature> signatures;
-        signatures = ParameterSignature.signatures(testClass.getOnlyConstructor());
+        List<ParameterSignature> signatures = ParameterSignature.signatures(testClass.getOnlyConstructor());
         signatures.addAll(ParameterSignature.signatures(testMethod));
         return new Assignments(new ArrayList<PotentialAssignment>(), signatures, testClass);
     }
@@ -63,7 +62,7 @@ public class Assignments {
     }
 
     public List<PotentialAssignment> potentialsForNextUnassigned()
-        throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException {
 
         ParameterSignature unassigned = nextUnassigned();
         return getSupplier(unassigned).getValueSources(unassigned);
@@ -81,7 +80,7 @@ public class Assignments {
     }
 
     public ParameterSupplier getAnnotatedSupplier(ParameterSignature unassigned)
-        throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException {
 
         ParametersSuppliedBy annotation = unassigned.findDeepAnnotation(ParametersSuppliedBy.class);
         if (annotation == null) {
@@ -98,14 +97,9 @@ public class Assignments {
         return getActualValues(getConstructorParameterCount(), fAssigned.size(), nullsOk);
     }
 
-    public Object[] getAllArguments(boolean nullsOk) throws CouldNotGenerateValueException {
-        return getActualValues(0, fAssigned.size(), nullsOk);
-    }
-
     private int getConstructorParameterCount() {
         List<ParameterSignature> signatures = ParameterSignature.signatures(fClass.getOnlyConstructor());
-        int constructorParameterCount = signatures.size();
-        return constructorParameterCount;
+        return signatures.size();
     }
 
     public Object[] getArgumentStrings(boolean nullsOk) throws CouldNotGenerateValueException {

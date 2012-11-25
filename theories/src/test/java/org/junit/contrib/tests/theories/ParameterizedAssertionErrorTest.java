@@ -10,39 +10,41 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
-import static org.junit.internal.matchers.StringContains.*;
 
 @RunWith(Theories.class)
 public class ParameterizedAssertionErrorTest {
-    @DataPoint public static final String METHOD_NAME = "methodName";
-    @DataPoint public static final NullPointerException NULL_POINTER_EXCEPTION = new NullPointerException();
-    @DataPoint public static final Object[] NO_OBJECTS = new Object[0];
+    @DataPoint
+    public static final String METHOD_NAME = "methodName";
 
     @DataPoint
-    public static ParameterizedAssertionError A = new ParameterizedAssertionError(
-            NULL_POINTER_EXCEPTION, METHOD_NAME);
+    public static final NullPointerException NULL_POINTER_EXCEPTION = new NullPointerException();
 
     @DataPoint
-    public static ParameterizedAssertionError B = new ParameterizedAssertionError(
-            NULL_POINTER_EXCEPTION, METHOD_NAME);
+    public static Object[] NO_OBJECTS = new Object[0];
 
     @DataPoint
-    public static ParameterizedAssertionError B2 = new ParameterizedAssertionError(
-            NULL_POINTER_EXCEPTION, "methodName2");
+    public static ParameterizedAssertionError A = new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, METHOD_NAME);
+
+    @DataPoint
+    public static ParameterizedAssertionError B = new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, METHOD_NAME);
+
+    @DataPoint
+    public static ParameterizedAssertionError B2 =
+            new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, "methodName2");
 
     @Theory
-    public void equalParameterizedAssertionErrorsHaveSameToString(ParameterizedAssertionError a,
-        ParameterizedAssertionError b) {
-
+    public void equalParameterizedAssertionErrorsHaveSameToString(
+            ParameterizedAssertionError a, ParameterizedAssertionError b) {
         assumeThat(a, is(b));
+
         assertThat(a.toString(), is(b.toString()));
     }
 
     @Theory
-    public void differentParameterizedAssertionErrorsHaveDifferentToStrings(ParameterizedAssertionError a,
-        ParameterizedAssertionError b) {
-
+    public void differentParameterizedAssertionErrorsHaveDifferentToStrings(
+            ParameterizedAssertionError a, ParameterizedAssertionError b) {
         assumeThat(a, not(b));
+
         assertThat(a.toString(), not(b.toString()));
     }
 

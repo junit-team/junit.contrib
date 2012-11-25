@@ -1,5 +1,6 @@
 package org.junit.contrib.tests.theories;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.contrib.theories.DataPoint;
 import org.junit.contrib.theories.ParameterSignature;
@@ -10,13 +11,11 @@ import org.junit.runner.RunWith;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
-import static org.junit.matchers.JUnitMatchers.*;
 
 @RunWith(Theories.class)
 public class ParameterSignatureTest {
@@ -25,12 +24,16 @@ public class ParameterSignatureTest {
         return ParameterSignatureTest.class.getMethod("getType", Method.class, int.class);
     }
 
-    @DataPoint public static final int ZERO = 0;
-    @DataPoint public static final int ONE = 1;
+    @DataPoint
+    public static int ZERO = 0;
+
+    @DataPoint
+    public static int ONE = 1;
 
     @Theory
     public void getType(Method method, int index) {
         assumeTrue(index < method.getParameterTypes().length);
+
         assertEquals(method.getParameterTypes()[index], ParameterSignature.signatures(method).get(index).getType());
     }
 
@@ -43,6 +46,6 @@ public class ParameterSignatureTest {
 
         List<Annotation> annotations = ParameterSignature.signatures(method).get(0).getAnnotations();
 
-        assertThat(new ArrayList<Object>(annotations), hasItem(is(TestedOn.class)));
+        assertThat(annotations, CoreMatchers.<TestedOn>hasItem(isA(TestedOn.class)));
     }
 }

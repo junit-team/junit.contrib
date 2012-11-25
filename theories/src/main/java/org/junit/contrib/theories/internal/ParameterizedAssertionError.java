@@ -23,7 +23,7 @@ public class ParameterizedAssertionError extends RuntimeException {
     public static String join(String delimiter, Collection<Object> values) {
         StringBuilder buffer = new StringBuilder();
 
-        for (Iterator<Object> iter = values.iterator(); iter.hasNext();) {
+        for (Iterator<Object> iter = values.iterator(); iter.hasNext(); ) {
             Object next = iter.next();
             buffer.append(stringValueOf(next));
             if (iter.hasNext()) {

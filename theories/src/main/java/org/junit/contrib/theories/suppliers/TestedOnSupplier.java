@@ -12,11 +12,12 @@ public class TestedOnSupplier extends ParameterSupplier {
     @Override
     public List<PotentialAssignment> getValueSources(ParameterSignature sig) {
         List<PotentialAssignment> list = new ArrayList<PotentialAssignment>();
+
         TestedOn testedOn = sig.getAnnotation(TestedOn.class);
-        int[] ints = testedOn.ints();
-        for (int i : ints) {
-            list.add(PotentialAssignment.forValue(Arrays.asList(ints).toString(), i));
+        for (int i : testedOn.ints()) {
+            list.add(PotentialAssignment.forValue("ints", i));
         }
+
         return list;
     }
 }

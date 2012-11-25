@@ -47,8 +47,7 @@ public class StubbedTheories extends Theories {
             queues.remove(guessers);
         }
 
-        private GuesserQueue createGuesserQueue(Assignments incomplete)
-                throws InstantiationException, IllegalAccessException {
+        private GuesserQueue createGuesserQueue(Assignments incomplete) throws Exception {
             ParameterSignature nextUnassigned = incomplete.nextUnassigned();
 
             if (nextUnassigned.hasAnnotation(Stub.class)) {
@@ -60,5 +59,4 @@ public class StubbedTheories extends Theories {
             return GuesserQueue.forSingleValues(incomplete.potentialsForNextUnassigned());
         }
     }
-
 }

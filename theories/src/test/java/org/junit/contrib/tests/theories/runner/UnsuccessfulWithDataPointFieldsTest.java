@@ -1,9 +1,11 @@
 package org.junit.contrib.tests.theories.runner;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.contrib.theories.DataPoint;
 import org.junit.contrib.theories.Theories;
 import org.junit.contrib.theories.Theory;
+import org.junit.experimental.results.PrintableResult;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.TestClass;
 
@@ -11,12 +13,12 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.experimental.results.PrintableResult.*;
 import static org.junit.experimental.results.ResultMatchers.*;
-import static org.junit.matchers.JUnitMatchers.*;
 
 public class UnsuccessfulWithDataPointFieldsTest {
     @RunWith(Theories.class)
     public static class HasATheory {
-        @DataPoint public static final int ONE = 1;
+        @DataPoint
+        public static int ONE = 1;
 
         @Theory
         public void everythingIsZero(int x) {
@@ -41,7 +43,8 @@ public class UnsuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class DoesntUseParams {
-        @DataPoint public static int ONE = 1;
+        @DataPoint
+        public static int ONE = 1;
 
         @Theory
         public void everythingIsZero(int x, int y) {
@@ -56,8 +59,11 @@ public class UnsuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class NullsOK {
-        @DataPoint public static final String NULL = null;
-        @DataPoint public static final String A = "A";
+        @DataPoint
+        public static String NULL = null;
+
+        @DataPoint
+        public static String A = "A";
 
         @Theory
         public void everythingIsA(String a) {
@@ -72,8 +78,11 @@ public class UnsuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class DataPointsMustBeStatic {
-        @DataPoint final int THREE = 3;
-        @DataPoint final int FOUR = 3;
+        @DataPoint
+        public int THREE = 3;
+
+        @DataPoint
+        public int FOUR = 4;
 
         @Theory
         public void numbers(int x) {
@@ -83,15 +92,15 @@ public class UnsuccessfulWithDataPointFieldsTest {
     @Test
     public void dataPointsMustBeStatic() {
         assertThat(testResult(DataPointsMustBeStatic.class),
-            both(failureCountIs(2))
-                    .and(hasFailureContaining("DataPoint field THREE must be static"))
-                    .and(hasFailureContaining("DataPoint field FOUR must be static")));
+                CoreMatchers.<PrintableResult>both(failureCountIs(2))
+                        .and(hasFailureContaining("DataPoint field THREE must be static"))
+                        .and(hasFailureContaining("DataPoint field FOUR must be static")));
     }
 
     @RunWith(Theories.class)
     public static class TheoriesMustBePublic {
         @DataPoint
-        public static final int THREE = 3;
+        public static int THREE = 3;
 
         @Theory
         void numbers(int x) {
@@ -101,5 +110,31 @@ public class UnsuccessfulWithDataPointFieldsTest {
     @Test
     public void theoriesMustBePublic() {
         assertThat(testResult(TheoriesMustBePublic.class), hasSingleFailureContaining("public"));
+    }
+
+    @RunWith(Theories.class)
+    public static class DataPointsMustBePublic {
+        @DataPoint
+        static int THREE = 3;
+
+        @DataPoint
+        protected static int FOUR = 4;
+
+        @SuppressWarnings("unused")
+        @DataPoint
+        private static int FIVE = 5;
+
+        @Theory
+        public void numbers(int x) {
+        }
+    }
+
+    @Test
+    public void dataPointsMustBePublic() {
+        assertThat(testResult(DataPointsMustBePublic.class),
+                allOf(failureCountIs(3),
+                        hasFailureContaining("DataPoint field THREE must be public"),
+                        hasFailureContaining("DataPoint field FOUR must be public"),
+                        hasFailureContaining("DataPoint field FIVE must be public")));
     }
 }
