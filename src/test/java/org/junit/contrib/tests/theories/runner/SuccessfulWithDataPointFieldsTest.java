@@ -21,7 +21,8 @@ import static org.junit.Assume.*;
 public class SuccessfulWithDataPointFieldsTest {
     @RunWith(Theories.class)
     public static class HasATwoParameterTheory {
-        @DataPoint public static final int ONE = 1;
+        @DataPoint
+        public static int ONE = 1;
 
         @Theory
         public void allIntsAreEqual(int x, int y) {
@@ -31,7 +32,8 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class BeforeAndAfterOnSameInstance {
-        @DataPoint public static final String A = "A";
+        @DataPoint
+        public static String A = "A";
 
         private int befores = 0;
 
@@ -48,8 +50,11 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class NewObjectEachTime {
-        @DataPoint public static final String A = "A";
-        @DataPoint public static final String B = "B";
+        @DataPoint
+        public static String A = "A";
+
+        @DataPoint
+        public static String B = "B";
 
         private List<String> list = new ArrayList<String>();
 
@@ -62,7 +67,8 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class PositiveInts {
-        @DataPoint public static final int ONE = 1;
+        @DataPoint
+        public static final int ONE = 1;
 
         private int x;
 
@@ -72,15 +78,17 @@ public class SuccessfulWithDataPointFieldsTest {
         }
 
         @Theory
-        public void haveAPostiveSquare() {
+        public void haveAPositiveSquare() {
             assertTrue(x * x > 0);
         }
     }
 
     @RunWith(Theories.class)
     public static class PositiveIntsWithNegativeField {
-        @DataPoint public static final int ONE = 1;
-        @DataPoint public static final int NEGONE = -1;
+        @DataPoint
+        public static final int ONE = 1;
+        @DataPoint
+        public static final int NEGONE = -1;
 
         private int x;
 
@@ -97,7 +105,8 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class PositiveIntsWithMethodParams {
-        @DataPoint public static final int ONE = 1;
+        @DataPoint
+        public static final int ONE = 1;
 
         private int x;
 
@@ -115,8 +124,11 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class DifferentTypesInConstructor {
-        @DataPoint public static final int ONE = 1;
-        @DataPoint public static final String A = "A";
+        @DataPoint
+        public static final int ONE = 1;
+
+        @DataPoint
+        public static final String A = "A";
 
         public DifferentTypesInConstructor(int x) {
         }
@@ -130,8 +142,11 @@ public class SuccessfulWithDataPointFieldsTest {
     public static class BeforeAndAfterEachTime {
         public static int befores = 0;
 
-        @DataPoint public static final String A = "A";
-        @DataPoint public static final String B = "B";
+        @DataPoint
+        public static String A = "A";
+
+        @DataPoint
+        public static String B = "B";
 
         @Before
         public void incrementBefore() {
@@ -157,7 +172,8 @@ public class SuccessfulWithDataPointFieldsTest {
     public static class OneTestTwoAnnotations {
         public static int tests = 0;
 
-        @DataPoint public static String A = "A";
+        @DataPoint
+        public static String A = "A";
 
         @BeforeClass
         public static void resetCalls() {
@@ -179,10 +195,11 @@ public class SuccessfulWithDataPointFieldsTest {
     @RunWith(Theories.class)
     static public class StaticPublicNonDataPoints {
         // DataPoint which passes the test
-        @DataPoint public static final int ZERO = 0;
+        @DataPoint
+        public static int ZERO = 0;
 
         // Not annotated as a DataPoint and therefore should be ignored:
-        public static final int ONE = 1;
+        public static int ONE = 1;
 
         @Theory
         public void onlyAnnotatedFields(int i) {

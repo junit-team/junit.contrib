@@ -64,8 +64,8 @@ public class Guesser<T> extends ReguessableValue {
         this(type, new GuessMap());
     }
 
-    public Guesser(Class<? extends T> type2, GuessMap guesses) {
-        this.type = type2;
+    public Guesser(Class<? extends T> type, GuessMap guesses) {
+        this.type = type;
         this.guesses = guesses;
     }
 
@@ -116,6 +116,6 @@ public class Guesser<T> extends ReguessableValue {
 
     @Override
     public String getDescription() throws CouldNotGenerateValueException {
-        return "guesser[" + type + "]";
+        return "guesser[" + type + ']';
     }
 }

@@ -21,8 +21,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.experimental.results.PrintableResult.*;
 import static org.junit.experimental.results.ResultMatchers.*;
-import static org.junit.internal.matchers.Each.*;
-import static org.junit.internal.matchers.StringContains.*;
 
 public class WithDataPointMethodTest {
     @RunWith(Theories.class)
@@ -71,8 +69,11 @@ public class WithDataPointMethodTest {
             return new ArrayList<Object>();
         }
 
-        @DataPoint public static final int ONE = 1;
-        @DataPoint public static final int TWO = 2;
+        @DataPoint
+        public static int ONE = 1;
+
+        @DataPoint
+        public static int TWO = 2;
 
         @Theory
         public void everythingsEmpty(List<Object> first, int number) {
@@ -112,14 +113,14 @@ public class WithDataPointMethodTest {
 
     @Test
     public void ignoreDataPointMethodsWithWrongTypes() throws Exception {
-        assertThat(potentialValues(HasDateMethod.class.getMethod("onlyStringsOk", String.class)).toString(),
+        assertThat(
+                potentialValues(HasDateMethod.class.getMethod("onlyStringsOk", String.class)).toString(),
                 not(containsString("100")));
     }
 
     @Test
     public void ignoreDataPointMethodsWithoutAnnotation() throws Throwable {
-        assertThat(potentialValues(HasDateMethod.class.getMethod("onlyDatesOk", Date.class)).size(),
-                is(0));
+        assertThat(potentialValues(HasDateMethod.class.getMethod("onlyDatesOk", Date.class)).size(), is(0));
     }
 
     private List<PotentialAssignment> potentialValues(Method method) throws Exception {
@@ -131,7 +132,6 @@ public class WithDataPointMethodTest {
     }
 
     private Matcher<Iterable<Failure>> empty() {
-        Matcher<Failure> nullValue = nullValue();
-        return each(nullValue);
+        return everyItem(nullValue(Failure.class));
     }
 }

@@ -12,7 +12,6 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +30,15 @@ public class Theories extends BlockJUnit4ClassRunner {
     private void validateDataPointFields(List<Throwable> errors) {
         Field[] fields = getTestClass().getJavaClass().getDeclaredFields();
 
-        for (Field each : fields) {
-            if (each.getAnnotation(DataPoint.class) != null && !Modifier.isStatic(each.getModifiers())) {
-                errors.add(new Error("DataPoint field " + each.getName() + " must be static"));
+        for (Field field : fields) {
+            if (field.getAnnotation(DataPoint.class) == null) {
+                continue;
+            }
+            if (!Modifier.isStatic(field.getModifiers())) {
+                errors.add(new Error("DataPoint field " + field.getName() + " must be static"));
+            }
+            if (!Modifier.isPublic(field.getModifiers())) {
+                errors.add(new Error("DataPoint field " + field.getName() + " must be public"));
             }
         }
     }
@@ -65,7 +70,7 @@ public class Theories extends BlockJUnit4ClassRunner {
     }
 
     @Override
-    public Statement methodBlock(final FrameworkMethod method) {
+    public Statement methodBlock(FrameworkMethod method) {
         return new TheoryAnchor(method, getTestClass());
     }
 
@@ -148,7 +153,7 @@ public class Theories extends BlockJUnit4ClassRunner {
         }
 
         private Statement methodCompletesWithParameters(final FrameworkMethod method, final Assignments complete,
-            final Object freshInstance) {
+                                                        final Object freshInstance) {
 
             return new Statement() {
                 @Override

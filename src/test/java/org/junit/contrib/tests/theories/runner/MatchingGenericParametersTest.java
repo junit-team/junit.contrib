@@ -1,25 +1,26 @@
 package org.junit.contrib.tests.theories.runner;
 
-import static org.hamcrest.core.Is.*;
-import static org.junit.Assert.*;
-import static org.junit.experimental.results.PrintableResult.testResult;
-import static org.junit.experimental.results.ResultMatchers.isSuccessful;
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Test;
 import org.junit.contrib.theories.DataPoint;
 import org.junit.contrib.theories.Theories;
 import org.junit.contrib.theories.Theory;
-import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.core.Is.*;
+import static org.junit.Assert.*;
+import static org.junit.experimental.results.PrintableResult.*;
+import static org.junit.experimental.results.ResultMatchers.*;
 
 public class MatchingGenericParametersTest {
     @RunWith(Theories.class)
     public static class CanDecideBetweenDifferentElementTypesOfLists {
-        @DataPoint public static final List<String> strings = Arrays.asList("what");
-        @DataPoint public static final List<Integer> ints = Arrays.asList(1);
+        @DataPoint
+        public static final List<String> strings = Arrays.asList("what");
+        @DataPoint
+        public static final List<Integer> ints = Arrays.asList(1);
 
         @Theory
         public void contentsOfLists(List<String> strings, List<Integer> ints) {
@@ -35,8 +36,10 @@ public class MatchingGenericParametersTest {
 
     @RunWith(Theories.class)
     public static class CanMatchListOfSpecificTypeToListOfUnknownType {
-        @DataPoint public static final List<String> strings = Arrays.asList("what");
-        @DataPoint public static final List<Integer> ints = Arrays.asList(1);
+        @DataPoint
+        public static final List<String> strings = Arrays.asList("what");
+        @DataPoint
+        public static final List<Integer> ints = Arrays.asList(1);
         public static int count;
 
         @Theory
@@ -53,7 +56,8 @@ public class MatchingGenericParametersTest {
 
     @RunWith(Theories.class)
     public static class CanMatchListOfUpperBoundedTypeToListOfSpecificType {
-        @DataPoint public static final List<Integer> ints = Arrays.asList(1);
+        @DataPoint
+        public static final List<Integer> ints = Arrays.asList(1);
 
         @Theory
         public void contentsOfLists(List<? extends Number> items) {
@@ -68,7 +72,8 @@ public class MatchingGenericParametersTest {
 
     @RunWith(Theories.class)
     public static class CanMatchListOfLowerBoundedTypeToListOfSpecificType {
-        @DataPoint public static final List<Integer> ints = Arrays.asList(1);
+        @DataPoint
+        public static final List<Integer> ints = Arrays.asList(1);
 
         @Theory
         public void contentsOfLists(List<? super Integer> items) {

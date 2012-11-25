@@ -42,7 +42,8 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
 
     @RunWith(Theories.class)
     public static class TypeVariableOnTheoryParm {
-        @DataPoint public static final String string = "foo";
+        @DataPoint
+        public static final String string = "foo";
 
         @Theory
         public <T> void forItem(T item) {
@@ -57,7 +58,8 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
 
     @RunWith(Theories.class)
     public static class TypeVariableOnParameterizedTheoryParm {
-        @DataPoint public static final List<String> strings = Arrays.asList("foo", "bar");
+        @DataPoint
+        public static final List<String> strings = Arrays.asList("foo", "bar");
 
         @Theory
         public <T> void forItems(Collection<T> items) {
@@ -72,7 +74,8 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
 
     @RunWith(Theories.class)
     public static class TypeVariableOnWildcardUpperBoundOnTheoryParm {
-        @DataPoint public static final List<String> strings = Arrays.asList("foo", "bar");
+        @DataPoint
+        public static final List<String> strings = Arrays.asList("foo", "bar");
 
         @Theory
         public <U> void forItems(Collection<? extends U> items) {
@@ -87,7 +90,8 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
 
     @RunWith(Theories.class)
     public static class TypeVariableOnWildcardLowerBoundOnTheoryParm {
-        @DataPoint public static final List<String> strings = Arrays.asList("foo", "bar");
+        @DataPoint
+        public static final List<String> strings = Arrays.asList("foo", "bar");
 
         @Theory
         public <V> void forItems(Collection<? super V> items) {
@@ -141,7 +145,8 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
 
     @RunWith(Theories.class)
     public static class TypeVariableOnTheoryClass<T> {
-        @DataPoint public static final String item = "bar";
+        @DataPoint
+        public static final String item = "bar";
 
         @Theory
         public void forItem(T item) {
@@ -165,7 +170,7 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
     public static class TypeVariablesAbound<A, B extends A, C extends Collection<B>> {
         @Theory
         public <D, E extends D, F, G> void forItem(A first, Collection<B> second, Map<C, ? extends D> third,
-            List<? super E> fourth, F[] fifth, Collection<G>[] sixth) {
+                                                   List<? super E> fourth, F[] fifth, Collection<G>[] sixth) {
         }
     }
 }

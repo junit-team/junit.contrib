@@ -61,15 +61,16 @@ public class AllMembersSupplier extends ParameterSupplier {
 
         addFields(sig, list);
         addSinglePointMethods(sig, list);
-        addMultiPointMethods(list);
+        addMultiPointMethods(sig, list);
 
         return list;
     }
 
-    private void addMultiPointMethods(List<PotentialAssignment> list) {
+    private void addMultiPointMethods(ParameterSignature sig, List<PotentialAssignment> list) {
         for (FrameworkMethod dataPointsMethod : fClass.getAnnotatedMethods(DataPoints.class)) {
             try {
-                addArrayValues(dataPointsMethod.getName(), list, dataPointsMethod.invokeExplosively(null));
+                addMultiPointArrayValues(sig, dataPointsMethod.getName(), list,
+                        dataPointsMethod.invokeExplosively(null));
             } catch (Throwable e) {
                 // ignore and move on
             }
@@ -87,10 +88,13 @@ public class AllMembersSupplier extends ParameterSupplier {
     private void addFields(ParameterSignature sig, List<PotentialAssignment> list) {
         for (Field field : fClass.getJavaClass().getFields()) {
             if (Modifier.isStatic(field.getModifiers())) {
-                Type type= field.getGenericType();
-
+                Type type = field.getGenericType();
                 if (sig.canAcceptArrayType(type) && field.getAnnotation(DataPoints.class) != null) {
-                    addArrayValues(field.getName(), list, getStaticFieldValue(field));
+                    try {
+                        addArrayValues(field.getName(), list, getStaticFieldValue(field));
+                    } catch (Throwable e) {
+                        // ignore and move on
+                    }
                 } else if (sig.canAcceptType(type) && field.getAnnotation(DataPoint.class) != null) {
                     list.add(PotentialAssignment.forValue(field.getName(), getStaticFieldValue(field)));
                 }
@@ -100,6 +104,16 @@ public class AllMembersSupplier extends ParameterSupplier {
 
     private void addArrayValues(String name, List<PotentialAssignment> list, Object array) {
         for (int i = 0; i < Array.getLength(array); i++) {
+            list.add(PotentialAssignment.forValue(name + '[' + i + ']', Array.get(array, i)));
+        }
+    }
+
+    private void addMultiPointArrayValues(ParameterSignature sig, String name, List<PotentialAssignment> list,
+                                          Object array) throws Throwable {
+        for (int i = 0; i < Array.getLength(array); i++) {
+            if (!sig.canAcceptValue(Array.get(array, i))) {
+                return;
+            }
             list.add(PotentialAssignment.forValue(name + '[' + i + ']', Array.get(array, i)));
         }
     }

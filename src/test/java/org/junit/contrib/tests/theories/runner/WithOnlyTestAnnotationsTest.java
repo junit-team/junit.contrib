@@ -11,13 +11,13 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.experimental.results.PrintableResult.*;
 import static org.junit.experimental.results.ResultMatchers.*;
-import static org.junit.matchers.JUnitMatchers.*;
 
 public class WithOnlyTestAnnotationsTest {
     @RunWith(Theories.class)
     public static class HonorExpectedException {
         @Test(expected = NullPointerException.class)
         public void shouldThrow() {
+
         }
     }
 
@@ -60,7 +60,8 @@ public class WithOnlyTestAnnotationsTest {
 
     @RunWith(Theories.class)
     static public class ErrorWhenTestHasParametersDespiteTheories {
-        @DataPoint public static final int ZERO = 0;
+        @DataPoint
+        public static int ZERO = 0;
 
         @Test
         public void testMethod(int i) {

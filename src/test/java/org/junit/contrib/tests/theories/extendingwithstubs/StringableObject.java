@@ -3,7 +3,7 @@ package org.junit.contrib.tests.theories.extendingwithstubs;
 import java.util.Arrays;
 
 public class StringableObject {
-    public Object obj;
+    public final Object obj;
 
     public StringableObject(Object obj) {
         this.obj = obj;
