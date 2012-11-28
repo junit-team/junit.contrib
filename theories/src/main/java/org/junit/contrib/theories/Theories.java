@@ -1,5 +1,8 @@
 package org.junit.contrib.theories;
 
+import com.thoughtworks.paranamer.AdaptiveParanamer;
+import com.thoughtworks.paranamer.CachingParanamer;
+import com.thoughtworks.paranamer.Paranamer;
 import org.junit.Assert;
 import org.junit.contrib.theories.PotentialAssignment.CouldNotGenerateValueException;
 import org.junit.contrib.theories.internal.Assignments;
@@ -75,11 +78,13 @@ public class Theories extends BlockJUnit4ClassRunner {
     }
 
     public static class TheoryAnchor extends Statement {
-        private int successes = 0;
-        private FrameworkMethod fTestMethod;
-        private TestClass fTestClass;
+        private final FrameworkMethod fTestMethod;
+        private final TestClass fTestClass;
+        private final List<AssumptionViolatedException> fInvalidParameters =
+                new ArrayList<AssumptionViolatedException>();
+        private final Paranamer fParanamer = new CachingParanamer(new AdaptiveParanamer());
 
-        private List<AssumptionViolatedException> fInvalidParameters = new ArrayList<AssumptionViolatedException>();
+        private int successes = 0;
 
         public TheoryAnchor(FrameworkMethod method, TestClass testClass) {
             fTestMethod = method;
@@ -92,7 +97,7 @@ public class Theories extends BlockJUnit4ClassRunner {
 
         @Override
         public void evaluate() throws Throwable {
-            runWithAssignment(Assignments.allUnassigned(fTestMethod.getMethod(), getTestClass()));
+            runWithAssignment(Assignments.allUnassigned(fTestMethod.getMethod(), getTestClass(), fParanamer));
 
             if (successes == 0) {
                 Assert.fail("Never found parameters that satisfied method assumptions.  Violated assumptions: "

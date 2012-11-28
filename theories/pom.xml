@@ -25,5 +25,10 @@
       <artifactId>javaruntype</artifactId>
       <version>1.2</version>
     </dependency>
+    <dependency>
+      <groupId>com.thoughtworks.paranamer</groupId>
+      <artifactId>paranamer</artifactId>
+      <version>2.5</version>
+    </dependency>
   </dependencies>
 </project>
