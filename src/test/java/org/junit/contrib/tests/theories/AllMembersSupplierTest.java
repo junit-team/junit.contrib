@@ -1,5 +1,6 @@
 package org.junit.contrib.tests.theories;
 
+import com.thoughtworks.paranamer.Paranamer;
 import org.junit.Test;
 import org.junit.contrib.theories.DataPoints;
 import org.junit.contrib.theories.ParameterSignature;
@@ -23,9 +24,11 @@ public class AllMembersSupplierTest {
 
     @Test
     public void dataPointsAnnotationMeansTreatAsArrayOnly() throws Exception {
-        List<PotentialAssignment> valueSources =
-                new AllMembersSupplier(new TestClass(HasDataPoints.class)).getValueSources(
-                        ParameterSignature.signatures(HasDataPoints.class.getConstructor(Object.class)).get(0));
+        Paranamer paranamer = new FakeParanamer("obj");
+
+        List<PotentialAssignment> valueSources = new AllMembersSupplier(new TestClass(HasDataPoints.class))
+                .getValueSources(ParameterSignature.signatures(
+                        HasDataPoints.class.getConstructor(Object.class), paranamer).get(0));
 
         assertThat(valueSources.size(), is(2));
     }
@@ -40,10 +43,12 @@ public class AllMembersSupplierTest {
 
     @Test
     public void dataPointsArrayFieldMayContainNullValue() throws Exception {
-        List<PotentialAssignment> valueSources =
-                new AllMembersSupplier(new TestClass(HasDataPointsFieldWithNullValue.class)).getValueSources(
-                        ParameterSignature.signatures(
-                                HasDataPointsFieldWithNullValue.class.getConstructor(Object.class)).get(0));
+        Paranamer paranamer = new FakeParanamer("obj");
+
+        List<PotentialAssignment> valueSources = new AllMembersSupplier(
+                new TestClass(HasDataPointsFieldWithNullValue.class))
+                    .getValueSources(ParameterSignature.signatures(
+                            HasDataPointsFieldWithNullValue.class.getConstructor(Object.class), paranamer).get(0));
 
         assertThat(valueSources.size(), is(2));
     }
@@ -60,10 +65,12 @@ public class AllMembersSupplierTest {
 
     @Test
     public void dataPointsArrayMethodMayContainNullValue() throws Exception {
-        List<PotentialAssignment> valueSources =
-                new AllMembersSupplier(new TestClass(HasDataPointsMethodWithNullValue.class)).getValueSources(
-                        ParameterSignature.signatures(
-                                HasDataPointsMethodWithNullValue.class.getConstructor(Integer.class)).get(0));
+        Paranamer paranamer = new FakeParanamer("i");
+
+        List<PotentialAssignment> valueSources = new AllMembersSupplier(
+                new TestClass(HasDataPointsMethodWithNullValue.class)).getValueSources(
+                    ParameterSignature.signatures(
+                            HasDataPointsMethodWithNullValue.class.getConstructor(Integer.class), paranamer).get(0));
 
         assertThat(valueSources.size(), is(2));
     }
