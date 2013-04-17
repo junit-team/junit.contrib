@@ -1,8 +1,6 @@
 package org.junit.contrib.tests.theories.suppliers;
 
-import com.thoughtworks.paranamer.Paranamer;
 import org.junit.Test;
-import org.junit.contrib.tests.theories.FakeParanamer;
 import org.junit.contrib.theories.ParameterSignature;
 import org.junit.contrib.theories.PotentialAssignment;
 import org.junit.contrib.theories.suppliers.TestedOn;
@@ -29,7 +27,6 @@ public class TestedOnSupplierTest {
 
     private ParameterSignature signatureOfFoo() throws Exception {
         Method method = getClass().getMethod("foo", int.class);
-        Paranamer paranamer = new FakeParanamer("x");
-        return ParameterSignature.signatures(method, paranamer).get(0);
+        return ParameterSignature.signatures(method).get(0);
     }
 }

@@ -2,7 +2,6 @@ package org.junit.contrib.tests.theories.runner;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
-import org.junit.contrib.tests.theories.FakeParanamer;
 import org.junit.contrib.theories.DataPoint;
 import org.junit.contrib.theories.PotentialAssignment;
 import org.junit.contrib.theories.Theories;
@@ -125,8 +124,7 @@ public class WithDataPointMethodTest {
     }
 
     private List<PotentialAssignment> potentialValues(Method method) throws Exception {
-        return Assignments.allUnassigned(method, new TestClass(HasDateMethod.class),
-                new FakeParanamer(method)).potentialsForNextUnassigned();
+        return Assignments.allUnassigned(method, new TestClass(HasDateMethod.class)).potentialsForNextUnassigned();
     }
 
     private List<Failure> failures(Class<?> type) {
