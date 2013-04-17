@@ -1,6 +1,5 @@
 package org.junit.contrib.theories;
 
-import com.thoughtworks.paranamer.Paranamer;
 import org.javaruntype.type.Types;
 import org.junit.runners.model.FrameworkMethod;
 
@@ -13,33 +12,30 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ParameterSignature {
-    public static ArrayList<ParameterSignature> signatures(Method method, Paranamer paranamer) {
-        return signatures(method.getGenericParameterTypes(), method.getParameterAnnotations(),
-                paranamer.lookupParameterNames(method));
+    public static ArrayList<ParameterSignature> signatures(Method method) {
+        return signatures(method.getGenericParameterTypes(), method.getParameterAnnotations());
     }
 
-    public static List<ParameterSignature> signatures(Constructor<?> constructor, Paranamer paranamer) {
-        return signatures(constructor.getGenericParameterTypes(), constructor.getParameterAnnotations(),
-                paranamer.lookupParameterNames(constructor));
+    public static List<ParameterSignature> signatures(Constructor<?> constructor) {
+        return signatures(constructor.getGenericParameterTypes(), constructor.getParameterAnnotations());
     }
 
     private static ArrayList<ParameterSignature> signatures(Type[] parameterTypes,
-            Annotation[][] parameterAnnotations, String[] names) {
+            Annotation[][] parameterAnnotations) {
+
         ArrayList<ParameterSignature> sigs = new ArrayList<ParameterSignature>();
         for (int i = 0; i < parameterTypes.length; i++) {
-            sigs.add(new ParameterSignature(parameterTypes[i], parameterAnnotations[i], names[i]));
+            sigs.add(new ParameterSignature(parameterTypes[i], parameterAnnotations[i]));
         }
         return sigs;
     }
 
     private final Type type;
     private final Annotation[] annotations;
-    private final String name;
 
-    private ParameterSignature(Type type, Annotation[] annotations, String name) {
+    private ParameterSignature(Type type, Annotation[] annotations) {
         this.type = type;
         this.annotations = annotations;
-        this.name = name;
     }
 
     public boolean canAcceptResultOf(FrameworkMethod dataPointMethod) {
@@ -59,10 +55,6 @@ public class ParameterSignature {
 
     public Type getType() {
         return type;
-    }
-
-    public String getParameterName() {
-        return name;
     }
 
     public List<Annotation> getAnnotations() {

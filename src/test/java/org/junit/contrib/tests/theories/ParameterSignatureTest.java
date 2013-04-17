@@ -1,6 +1,5 @@
 package org.junit.contrib.tests.theories;
 
-import com.thoughtworks.paranamer.Paranamer;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.contrib.theories.DataPoint;
@@ -36,10 +35,7 @@ public class ParameterSignatureTest {
     public void getType(Method method, int index) {
         assumeTrue(index < method.getParameterTypes().length);
 
-        Paranamer paranamer = new FakeParanamer("method", "index");
-
-        assertEquals(method.getParameterTypes()[index],
-                ParameterSignature.signatures(method, paranamer).get(index).getType());
+        assertEquals(method.getParameterTypes()[index], ParameterSignature.signatures(method).get(index).getType());
     }
 
     public void foo(@TestedOn(ints = { 1, 2, 3 }) int x) {
@@ -48,9 +44,8 @@ public class ParameterSignatureTest {
     @Test
     public void getAnnotations() throws Exception {
         Method method = ParameterSignatureTest.class.getMethod("foo", int.class);
-        Paranamer paranamer = new FakeParanamer("x");
 
-        List<Annotation> annotations = ParameterSignature.signatures(method, paranamer).get(0).getAnnotations();
+        List<Annotation> annotations = ParameterSignature.signatures(method).get(0).getAnnotations();
 
         assertThat(annotations, CoreMatchers.<TestedOn> hasItem(isA(TestedOn.class)));
     }

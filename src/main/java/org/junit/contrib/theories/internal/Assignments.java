@@ -1,6 +1,5 @@
 package org.junit.contrib.theories.internal;
 
-import com.thoughtworks.paranamer.Paranamer;
 import org.junit.contrib.theories.ParameterSignature;
 import org.junit.contrib.theories.ParameterSupplier;
 import org.junit.contrib.theories.ParametersSuppliedBy;
@@ -19,25 +18,21 @@ public class Assignments {
     private List<PotentialAssignment> fAssigned;
     private final List<ParameterSignature> fUnassigned;
     private final TestClass fClass;
-    private final Paranamer fParanamer;
 
-    private Assignments(List<PotentialAssignment> assigned, List<ParameterSignature> unassigned, TestClass testClass,
-            Paranamer paranamer) {
+    private Assignments(List<PotentialAssignment> assigned, List<ParameterSignature> unassigned, TestClass testClass) {
         fUnassigned = unassigned;
         fAssigned = assigned;
         fClass = testClass;
-        fParanamer = paranamer;
     }
 
     /**
      * Returns a new assignment list for {@code testMethod}, with no params assigned.
      */
-    public static Assignments allUnassigned(Method testMethod, TestClass testClass, Paranamer paranamer)
-            throws Exception {
+    public static Assignments allUnassigned(Method testMethod, TestClass testClass) throws Exception {
         List<ParameterSignature> signatures =
-                ParameterSignature.signatures(testClass.getOnlyConstructor(), paranamer);
-        signatures.addAll(ParameterSignature.signatures(testMethod, paranamer));
-        return new Assignments(new ArrayList<PotentialAssignment>(), signatures, testClass, paranamer);
+                ParameterSignature.signatures(testClass.getOnlyConstructor());
+        signatures.addAll(ParameterSignature.signatures(testMethod));
+        return new Assignments(new ArrayList<PotentialAssignment>(), signatures, testClass);
     }
 
     public boolean isComplete() {
@@ -52,7 +47,7 @@ public class Assignments {
         List<PotentialAssignment> assigned = new ArrayList<PotentialAssignment>(fAssigned);
         assigned.add(source);
 
-        return new Assignments(assigned, fUnassigned.subList(1, fUnassigned.size()), fClass, fParanamer);
+        return new Assignments(assigned, fUnassigned.subList(1, fUnassigned.size()), fClass);
     }
 
     public Object[] getActualValues(int start, int stop, boolean nullsOk) throws CouldNotGenerateValueException {
@@ -104,7 +99,7 @@ public class Assignments {
     }
 
     private int getConstructorParameterCount() {
-        List<ParameterSignature> signatures = ParameterSignature.signatures(fClass.getOnlyConstructor(), fParanamer);
+        List<ParameterSignature> signatures = ParameterSignature.signatures(fClass.getOnlyConstructor());
         return signatures.size();
     }
 
