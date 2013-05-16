@@ -67,7 +67,8 @@ public class MatchingGenericParametersTest {
 
     @Test
     public void listOfSpecificToListOfUpperBounded() {
-        assertThat(testResult(CanMatchListOfUpperBoundedTypeToListOfSpecificType.class), isSuccessful());
+        assertThat(testResult(CanMatchListOfUpperBoundedTypeToListOfSpecificType.class),
+                isSuccessful());
     }
 
     @RunWith(Theories.class)
@@ -83,6 +84,7 @@ public class MatchingGenericParametersTest {
 
     @Test
     public void listOfSpecificToListOfLowerBounded() {
-        assertThat(testResult(CanMatchListOfLowerBoundedTypeToListOfSpecificType.class), isSuccessful());
+        assertThat(testResult(CanMatchListOfLowerBoundedTypeToListOfSpecificType.class),
+                isSuccessful());
     }
 }

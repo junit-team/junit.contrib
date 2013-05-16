@@ -17,7 +17,8 @@ public class ParameterSignature {
     }
 
     public static List<ParameterSignature> signatures(Constructor<?> constructor) {
-        return signatures(constructor.getGenericParameterTypes(), constructor.getParameterAnnotations());
+        return signatures(constructor.getGenericParameterTypes(),
+                constructor.getParameterAnnotations());
     }
 
     private static ArrayList<ParameterSignature> signatures(Type[] parameterTypes,
@@ -40,7 +41,8 @@ public class ParameterSignature {
 
     public boolean canAcceptResultOf(FrameworkMethod dataPointMethod) {
         Method method = dataPointMethod.getMethod();
-        return method.getParameterTypes().length == 0 && canAcceptType(method.getGenericReturnType());
+        return method.getParameterTypes().length == 0
+                && canAcceptType(method.getGenericReturnType());
     }
 
     public boolean canAcceptValue(Object candidate) {
@@ -50,7 +52,8 @@ public class ParameterSignature {
     }
 
     public boolean canAcceptType(Type candidate) {
-        return Types.forJavaLangReflectType(type).isAssignableFrom(Types.forJavaLangReflectType(candidate));
+        return Types.forJavaLangReflectType(type).isAssignableFrom(
+                Types.forJavaLangReflectType(candidate));
     }
 
     public Type getType() {
@@ -75,7 +78,8 @@ public class ParameterSignature {
         return findDeepAnnotation(annotations2, annotationType, 3);
     }
 
-    private <T extends Annotation> T findDeepAnnotation(Annotation[] annotations, Class<T> annotationType, int depth) {
+    private <T extends Annotation> T findDeepAnnotation(Annotation[] annotations,
+            Class<T> annotationType, int depth) {
         if (depth == 0) {
             return null;
         }
@@ -86,7 +90,8 @@ public class ParameterSignature {
             }
 
             Annotation candidate =
-                    findDeepAnnotation(each.annotationType().getAnnotations(), annotationType, depth - 1);
+                    findDeepAnnotation(each.annotationType().getAnnotations(), annotationType,
+                            depth - 1);
             if (candidate != null) {
                 return annotationType.cast(candidate);
             }

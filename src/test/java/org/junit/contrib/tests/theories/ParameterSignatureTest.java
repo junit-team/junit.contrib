@@ -35,7 +35,8 @@ public class ParameterSignatureTest {
     public void getType(Method method, int index) {
         assumeTrue(index < method.getParameterTypes().length);
 
-        assertEquals(method.getParameterTypes()[index], ParameterSignature.signatures(method).get(index).getType());
+        assertEquals(method.getParameterTypes()[index],
+                ParameterSignature.signatures(method).get(index).getType());
     }
 
     public void foo(@TestedOn(ints = { 1, 2, 3 }) int x) {
@@ -45,7 +46,8 @@ public class ParameterSignatureTest {
     public void getAnnotations() throws Exception {
         Method method = ParameterSignatureTest.class.getMethod("foo", int.class);
 
-        List<Annotation> annotations = ParameterSignature.signatures(method).get(0).getAnnotations();
+        List<Annotation> annotations =
+                ParameterSignature.signatures(method).get(0).getAnnotations();
 
         assertThat(annotations, CoreMatchers.<TestedOn> hasItem(isA(TestedOn.class)));
     }

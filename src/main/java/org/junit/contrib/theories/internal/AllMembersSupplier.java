@@ -95,8 +95,10 @@ public class AllMembersSupplier extends ParameterSupplier {
                     } catch (Throwable e) {
                         // ignore and move on
                     }
-                } else if (sig.canAcceptType(type) && field.getAnnotation(DataPoint.class) != null) {
-                    list.add(PotentialAssignment.forValue(field.getName(), getStaticFieldValue(field)));
+                } else if (sig.canAcceptType(type)
+                        && field.getAnnotation(DataPoint.class) != null) {
+                    list.add(PotentialAssignment.forValue(field.getName(),
+                            getStaticFieldValue(field)));
                 }
             }
         }
@@ -108,8 +110,8 @@ public class AllMembersSupplier extends ParameterSupplier {
         }
     }
 
-    private void addMultiPointArrayValues(ParameterSignature sig, String name, List<PotentialAssignment> list,
-                                          Object array) throws Throwable {
+    private void addMultiPointArrayValues(ParameterSignature sig, String name,
+            List<PotentialAssignment> list, Object array) throws Throwable {
         for (int i = 0; i < Array.getLength(array); i++) {
             if (!sig.canAcceptValue(Array.get(array, i))) {
                 return;

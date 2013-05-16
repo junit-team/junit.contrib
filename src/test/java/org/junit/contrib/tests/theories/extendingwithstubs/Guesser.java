@@ -71,7 +71,8 @@ public class Guesser<T> extends ReguessableValue {
 
     @SuppressWarnings("unchecked")
     public T getProxy() {
-        return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { getType() }, guesses);
+        return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { getType() },
+                guesses);
     }
 
     @Override

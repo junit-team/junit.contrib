@@ -35,7 +35,8 @@ public class WhenNoParametersMatchTest {
     }
 
     @Theory
-    public void showFailedAssumptionsWhenNoParametersFound(int data, Matcher matcher) throws Exception {
+    public void showFailedAssumptionsWhenNoParametersFound(int data, Matcher matcher)
+            throws Exception {
         @SuppressWarnings("unchecked")
         Matcher<Integer> typed = (Matcher<Integer>) matcher;
 

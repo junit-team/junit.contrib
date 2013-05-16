@@ -3,22 +3,25 @@ JUnit Theories Runner
 
 This is a port of the JUnit theories runner into junit.contrib.
 
-In addition to being current with the theories implementation in the latest release of JUnit and depending on its core,
-this implementation contains a resolution for [JUnit GitHub issue 64](http://github.com/KentBeck/junit/issues/64),
-making it possible for [junit-quickcheck](http://github.com/pholser/junit-quickcheck) to generate
-values for theory parameters involving generics in a safe manner.
+In addition to being current with the theories implementation in the latest release of JUnit and
+depending on its core, this implementation contains a resolution for
+[JUnit GitHub issue 64](http://github.com/KentBeck/junit/issues/64), making it possible for
+[junit-quickcheck](http://github.com/pholser/junit-quickcheck) to generate values for theory
+parameters involving generics in a safe manner.
 
-Ultimately it is hoped that this rendition becomes the sanctioned theories runner for JUnit, so that the one in the
-core can be removed, meaning that this runner can evolve without new releases of JUnit.
+Ultimately it is hoped that this rendition becomes the sanctioned theories runner for JUnit,
+so that the one in the core can be removed, meaning that this runner can evolve without new
+releases of JUnit.
 
-**PLEASE NOTE**: The classes that comprise this rendition of the JUnit theories runner are packaged as
-`org.junit.contrib.theories.*`, rather than `org.junit.experimental.theories.*`. Be careful not to intermix the two.
+**PLEASE NOTE**: The classes that comprise this rendition of the JUnit theories runner are packaged
+as `org.junit.contrib.theories.*`, rather than `org.junit.experimental.theories.*`. Be careful not
+to intermix the two.
 
 ### What is a theory?
 
-Most JUnit tests are example-based: given a specific set of inputs, the test subject behaves in a particular way or
-responds with a specific answer. For example, here are some tests we might write when test-driving a prime factors
-kata:
+Most JUnit tests are example-based: given a specific set of inputs, the test subject behaves in a
+particular way or responds with a specific answer. For example, here are some tests we might write
+when test-driving a prime factors kata:
 
     public class PrimeFactors {
         public static List<Integer> of(int n) {
@@ -78,16 +81,17 @@ We can eliminate duplicated test logic sometimes by using parameterized tests:
         }
     }
 
-Neither of these tests expresses important characteristics we want the the answers given by `PrimeFactors.of()` to
-exhibit: No matter what positive integer you give the method...
+Neither of these tests expresses important characteristics we want the the answers given by
+`PrimeFactors.of()` to exhibit: No matter what positive integer you give the method...
 
 * The factors should be prime
 * The factors should multiply together to give the original integer
 * No two factorizations of two distinct integer are identical
 
-Whenever we want to express characteristics of a test subject that hold for entire classes of inputs, and we can
-express the characteristics in terms of inputs and outputs, we can codify these desired characteristics in _theories_.
-Here are the characteristics of `PrimeFactors.of()` expressed as theories:
+Whenever we want to express characteristics of a test subject that hold for entire classes of
+inputs, and we can express the characteristics in terms of inputs and outputs, we can codify these
+desired characteristics in _theories_. Here are the characteristics of `PrimeFactors.of()`
+expressed as theories:
 
     @RunWith(Theories.class)
     public class PrimeFactorsTheories {
@@ -138,20 +142,22 @@ Here are the characteristics of `PrimeFactors.of()` expressed as theories:
 
 * A theory method accepts parameters, which represent arbitrary inputs to the theory.
 
-* Theory methods can state _assumptions_ about their inputs using the methods of `Assume`. For example, the theories
-above assume that we're dealing with positive integers. The remainder of a theory is not run if one of its assumptions
-is violated.
+* Theory methods can state _assumptions_ about their inputs using the methods of `Assume`.
+For example, the theories above assume that we're dealing with positive integers. The remainder
+of a theory is not run if one of its assumptions is violated.
 
-* Theory methods state success criteria in the form of _assertions_, just like regular JUnit tests do.
+* Theory methods state success criteria in the form of _assertions_, just like regular JUnit tests
+do.
 
-* By default, inputs are supplied to theories from fields and methods on the class annotated as either `@DataPoint`
-or `@DataPoints`. A theory method is invoked once for every combination of data points that match on type.
+* By default, inputs are supplied to theories from fields and methods on the class annotated as
+either `@DataPoint` or `@DataPoints`. A theory method is invoked once for every combination of data
+points that match on type.
 
 #### Alternate means of providing theory data
 
-The data points method is somewhat flawed, because we are still baking concrete example data into the theory class.
-It would be nice to be able to decouple the theory from data that is used to verify the theory -- after all, a theory
-should hold for potentially infinite classes of data.
+The data points method is somewhat flawed, because we are still baking concrete example data into
+the theory class. It would be nice to be able to decouple the theory from data that is used to
+verify the theory -- after all, a theory should hold for potentially infinite classes of data.
 
 Thankfully, we can use `ParameterSupplier`s for just this purpose:
 
@@ -205,11 +211,13 @@ To customize how data are fed to a given theory parameter:
 
 * Create a class that extends `ParameterSupplier`
 
-* Create an annotation that is itself annotated with `@ParametersSuppliedBy(YourParameterSupplier.class)`
+* Create an annotation that is itself annotated with
+`@ParametersSuppliedBy(YourParameterSupplier.class)`
 
 * Mark the desired theory parameter with your annotation
 
-In the example above, we create a `PositiveIntegerParameterSupplier` that gives 100 positive integers at random
-when invoked. Then, we create an annotation `@AnyPositive` and apply it to the theory parameters. This allows us to
-get rid of our baked-in data points and test the theory against lots of random values. Also, because our parameter
-supplier is coded to supply only positive integers, we can remove the positivity assumptions from the theories.
+In the example above, we create a `PositiveIntegerParameterSupplier` that gives 100 positive
+integers at random when invoked. Then, we create an annotation `@AnyPositive` and apply it to the
+theory parameters. This allows us to get rid of our baked-in data points and test the theory
+against lots of random values. Also, because our parameter supplier is coded to supply only
+positive integers, we can remove the positivity assumptions from the theories.

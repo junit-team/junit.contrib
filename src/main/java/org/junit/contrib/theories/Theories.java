@@ -95,8 +95,8 @@ public class Theories extends BlockJUnit4ClassRunner {
             runWithAssignment(Assignments.allUnassigned(fTestMethod.getMethod(), getTestClass()));
 
             if (successes == 0) {
-                Assert.fail("Never found parameters that satisfied method assumptions.  Violated assumptions: "
-                        + fInvalidParameters);
+                Assert.fail("Never found parameters that satisfied method assumptions."
+                        + "  Violated assumptions: " + fInvalidParameters);
             }
         }
 
@@ -147,14 +147,14 @@ public class Theories extends BlockJUnit4ClassRunner {
 
                 @Override
                 public Object createTest() throws Exception {
-                    return getTestClass().getOnlyConstructor().newInstance(complete.getConstructorArguments(nullsOk()));
+                    return getTestClass().getOnlyConstructor().newInstance(
+                            complete.getConstructorArguments(nullsOk()));
                 }
             }.methodBlock(fTestMethod).evaluate();
         }
 
-        private Statement methodCompletesWithParameters(final FrameworkMethod method, final Assignments complete,
-                                                        final Object freshInstance) {
-
+        private Statement methodCompletesWithParameters(final FrameworkMethod method,
+                final Assignments complete, final Object freshInstance) {
             return new Statement() {
                 @Override
                 public void evaluate() throws Throwable {
