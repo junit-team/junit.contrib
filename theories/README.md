@@ -86,7 +86,7 @@ Neither of these tests expresses important characteristics we want the the answe
 
 * The factors should be prime
 * The factors should multiply together to give the original integer
-* No two factorizations of two distinct integer are identical
+* No two factorizations of two distinct integers are identical
 
 Whenever we want to express characteristics of a test subject that hold for entire classes of
 inputs, and we can express the characteristics in terms of inputs and outputs, we can codify these
