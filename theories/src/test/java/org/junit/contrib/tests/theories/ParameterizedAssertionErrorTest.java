@@ -23,10 +23,12 @@ public class ParameterizedAssertionErrorTest {
     public static Object[] NO_OBJECTS = new Object[0];
 
     @DataPoint
-    public static ParameterizedAssertionError A = new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, METHOD_NAME);
+    public static ParameterizedAssertionError A =
+            new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, METHOD_NAME);
 
     @DataPoint
-    public static ParameterizedAssertionError B = new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, METHOD_NAME);
+    public static ParameterizedAssertionError B =
+            new ParameterizedAssertionError(NULL_POINTER_EXCEPTION, METHOD_NAME);
 
     @DataPoint
     public static ParameterizedAssertionError B2 =
@@ -56,7 +58,8 @@ public class ParameterizedAssertionErrorTest {
 
     @Theory(nullsAccepted = false)
     public void buildParameterizedAssertionError(String methodName, String param) {
-        assertThat(new ParameterizedAssertionError(new RuntimeException(), methodName, param).toString(),
+        assertThat(new ParameterizedAssertionError(new RuntimeException(), methodName, param)
+                .toString(),
                 containsString(methodName));
     }
 

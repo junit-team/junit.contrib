@@ -43,7 +43,8 @@ public class AllMembersSupplierTest {
         List<PotentialAssignment> valueSources = new AllMembersSupplier(
                 new TestClass(HasDataPointsFieldWithNullValue.class))
                     .getValueSources(ParameterSignature.signatures(
-                            HasDataPointsFieldWithNullValue.class.getConstructor(Object.class)).get(0));
+                            HasDataPointsFieldWithNullValue.class.getConstructor(Object.class))
+                                    .get(0));
 
         assertThat(valueSources.size(), is(2));
     }
@@ -63,7 +64,8 @@ public class AllMembersSupplierTest {
         List<PotentialAssignment> valueSources = new AllMembersSupplier(
                 new TestClass(HasDataPointsMethodWithNullValue.class)).getValueSources(
                     ParameterSignature.signatures(
-                            HasDataPointsMethodWithNullValue.class.getConstructor(Integer.class)).get(0));
+                            HasDataPointsMethodWithNullValue.class.getConstructor(Integer.class))
+                                    .get(0));
 
         assertThat(valueSources.size(), is(2));
     }

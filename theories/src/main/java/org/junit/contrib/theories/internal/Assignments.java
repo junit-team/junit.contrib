@@ -19,7 +19,8 @@ public class Assignments {
     private final List<ParameterSignature> fUnassigned;
     private final TestClass fClass;
 
-    private Assignments(List<PotentialAssignment> assigned, List<ParameterSignature> unassigned, TestClass testClass) {
+    private Assignments(List<PotentialAssignment> assigned, List<ParameterSignature> unassigned,
+            TestClass testClass) {
         fUnassigned = unassigned;
         fAssigned = assigned;
         fClass = testClass;
@@ -28,7 +29,8 @@ public class Assignments {
     /**
      * Returns a new assignment list for {@code testMethod}, with no params assigned.
      */
-    public static Assignments allUnassigned(Method testMethod, TestClass testClass) throws Exception {
+    public static Assignments allUnassigned(Method testMethod, TestClass testClass)
+            throws Exception {
         List<ParameterSignature> signatures =
                 ParameterSignature.signatures(testClass.getOnlyConstructor());
         signatures.addAll(ParameterSignature.signatures(testMethod));
@@ -50,7 +52,8 @@ public class Assignments {
         return new Assignments(assigned, fUnassigned.subList(1, fUnassigned.size()), fClass);
     }
 
-    public Object[] getActualValues(int start, int stop, boolean nullsOk) throws CouldNotGenerateValueException {
+    public Object[] getActualValues(int start, int stop, boolean nullsOk)
+            throws CouldNotGenerateValueException {
         Object[] values = new Object[stop - start];
         for (int i = start; i < stop; i++) {
             Object value = fAssigned.get(i).getValue();
@@ -99,7 +102,8 @@ public class Assignments {
     }
 
     private int getConstructorParameterCount() {
-        List<ParameterSignature> signatures = ParameterSignature.signatures(fClass.getOnlyConstructor());
+        List<ParameterSignature> signatures =
+                ParameterSignature.signatures(fClass.getOnlyConstructor());
         return signatures.size();
     }
 

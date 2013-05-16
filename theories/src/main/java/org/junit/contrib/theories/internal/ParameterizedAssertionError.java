@@ -7,7 +7,8 @@ import java.util.Iterator;
 public class ParameterizedAssertionError extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public ParameterizedAssertionError(Throwable targetException, String methodName, Object... params) {
+    public ParameterizedAssertionError(Throwable targetException, String methodName,
+            Object... params) {
         super(String.format("%s(%s)", methodName, join(", ", params)), targetException);
     }
 

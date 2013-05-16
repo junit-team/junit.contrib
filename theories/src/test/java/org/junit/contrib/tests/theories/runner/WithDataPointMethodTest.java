@@ -113,18 +113,20 @@ public class WithDataPointMethodTest {
 
     @Test
     public void ignoreDataPointMethodsWithWrongTypes() throws Exception {
-        assertThat(
-                potentialValues(HasDateMethod.class.getMethod("onlyStringsOk", String.class)).toString(),
+        assertThat(potentialValues(HasDateMethod.class.getMethod("onlyStringsOk", String.class))
+                .toString(),
                 not(containsString("100")));
     }
 
     @Test
     public void ignoreDataPointMethodsWithoutAnnotation() throws Throwable {
-        assertThat(potentialValues(HasDateMethod.class.getMethod("onlyDatesOk", Date.class)).size(), is(0));
+        assertThat(potentialValues(HasDateMethod.class.getMethod("onlyDatesOk", Date.class)).size(),
+                is(0));
     }
 
     private List<PotentialAssignment> potentialValues(Method method) throws Exception {
-        return Assignments.allUnassigned(method, new TestClass(HasDateMethod.class)).potentialsForNextUnassigned();
+        return Assignments.allUnassigned(method,
+                new TestClass(HasDateMethod.class)).potentialsForNextUnassigned();
     }
 
     private List<Failure> failures(Class<?> type) {

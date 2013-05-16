@@ -169,8 +169,9 @@ public class WithUnresolvedGenericTypeVariablesOnTheoryParmsTest {
     @RunWith(Theories.class)
     public static class TypeVariablesAbound<A, B extends A, C extends Collection<B>> {
         @Theory
-        public <D, E extends D, F, G> void forItem(A first, Collection<B> second, Map<C, ? extends D> third,
-                                                   List<? super E> fourth, F[] fifth, Collection<G>[] sixth) {
+        public <D, E extends D, F, G> void forItem(A first, Collection<B> second,
+                Map<C, ? extends D> third, List<? super E> fourth, F[] fifth,
+                Collection<G>[] sixth) {
         }
     }
 }
