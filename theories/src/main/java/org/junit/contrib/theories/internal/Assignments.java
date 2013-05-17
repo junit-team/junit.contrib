@@ -12,10 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A potentially incomplete list of value assignments for a method's formal parameters
+ * <p>A potentially incomplete list of value assignments for a method's formal parameters.</p>
+ *
+ * <p>Instances are intended to be immutable.</p>
  */
 public class Assignments {
-    private List<PotentialAssignment> fAssigned;
+    private final List<PotentialAssignment> fAssigned;
     private final List<ParameterSignature> fUnassigned;
     private final TestClass fClass;
 

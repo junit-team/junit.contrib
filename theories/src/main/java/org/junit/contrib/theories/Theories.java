@@ -79,7 +79,7 @@ public class Theories extends BlockJUnit4ClassRunner {
         private final TestClass fTestClass;
         private final List<AssumptionViolatedException> fInvalidParameters =
                 new ArrayList<AssumptionViolatedException>();
-        private int successes = 0;
+        private int fSuccesses = 0;
 
         public TheoryAnchor(FrameworkMethod method, TestClass testClass) {
             fTestMethod = method;
@@ -94,7 +94,7 @@ public class Theories extends BlockJUnit4ClassRunner {
         public void evaluate() throws Throwable {
             runWithAssignment(Assignments.allUnassigned(fTestMethod.getMethod(), getTestClass()));
 
-            if (successes == 0) {
+            if (fSuccesses == 0) {
                 Assert.fail("Never found parameters that satisfied method assumptions."
                         + "  Violated assumptions: " + fInvalidParameters);
             }
@@ -115,7 +115,12 @@ public class Theories extends BlockJUnit4ClassRunner {
         }
 
         protected void runWithCompleteAssignment(final Assignments complete) throws Throwable {
-            new BlockJUnit4ClassRunner(getTestClass().getJavaClass()) {
+            statementForCompleteAssignment(complete).evaluate();
+        }
+
+        private Statement statementForCompleteAssignment(final Assignments complete)
+                throws InitializationError {
+            return new BlockJUnit4ClassRunner(getTestClass().getJavaClass()) {
                 @Override
                 protected void collectInitializationErrors(List<Throwable> errors) {
                     // do nothing
@@ -142,7 +147,7 @@ public class Theories extends BlockJUnit4ClassRunner {
 
                 @Override
                 protected Statement methodInvoker(FrameworkMethod method, Object test) {
-                    return methodCompletesWithParameters(method, complete, test);
+                    return methodWithCompleteParameters(method, complete, test);
                 }
 
                 @Override
@@ -150,10 +155,10 @@ public class Theories extends BlockJUnit4ClassRunner {
                     return getTestClass().getOnlyConstructor().newInstance(
                             complete.getConstructorArguments(nullsOk()));
                 }
-            }.methodBlock(fTestMethod).evaluate();
+            }.methodBlock(fTestMethod);
         }
 
-        private Statement methodCompletesWithParameters(final FrameworkMethod method,
+        private Statement methodWithCompleteParameters(final FrameworkMethod method,
                 final Assignments complete, final Object freshInstance) {
             return new Statement() {
                 @Override
@@ -185,7 +190,7 @@ public class Theories extends BlockJUnit4ClassRunner {
         }
 
         protected void handleDataPointSuccess() {
-            successes++;
+            fSuccesses++;
         }
     }
 }

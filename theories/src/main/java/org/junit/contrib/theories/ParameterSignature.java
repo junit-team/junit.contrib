@@ -31,12 +31,12 @@ public class ParameterSignature {
         return sigs;
     }
 
-    private final Type type;
-    private final Annotation[] annotations;
+    private final Type fType;
+    private final Annotation[] fAnnotations;
 
     private ParameterSignature(Type type, Annotation[] annotations) {
-        this.type = type;
-        this.annotations = annotations;
+        fType = type;
+        fAnnotations = annotations;
     }
 
     public boolean canAcceptResultOf(FrameworkMethod dataPointMethod) {
@@ -47,21 +47,21 @@ public class ParameterSignature {
 
     public boolean canAcceptValue(Object candidate) {
         return candidate == null ?
-                !Types.forJavaLangReflectType(type).getRawClass().isPrimitive()
+                !Types.forJavaLangReflectType(fType).getRawClass().isPrimitive()
                 : canAcceptType(candidate.getClass());
     }
 
     public boolean canAcceptType(Type candidate) {
-        return Types.forJavaLangReflectType(type).isAssignableFrom(
+        return Types.forJavaLangReflectType(fType).isAssignableFrom(
                 Types.forJavaLangReflectType(candidate));
     }
 
     public Type getType() {
-        return type;
+        return fType;
     }
 
     public List<Annotation> getAnnotations() {
-        return Arrays.asList(annotations);
+        return Arrays.asList(fAnnotations);
     }
 
     public boolean canAcceptArrayType(Type type) {
@@ -74,8 +74,7 @@ public class ParameterSignature {
     }
 
     public <T extends Annotation> T findDeepAnnotation(Class<T> annotationType) {
-        Annotation[] annotations2 = annotations;
-        return findDeepAnnotation(annotations2, annotationType, 3);
+        return findDeepAnnotation(fAnnotations, annotationType, 3);
     }
 
     private <T extends Annotation> T findDeepAnnotation(Annotation[] annotations,
