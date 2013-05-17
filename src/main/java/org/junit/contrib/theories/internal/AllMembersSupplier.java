@@ -106,7 +106,7 @@ public class AllMembersSupplier extends ParameterSupplier {
 
     private void addArrayValues(String name, List<PotentialAssignment> list, Object array) {
         for (int i = 0; i < Array.getLength(array); i++) {
-            list.add(PotentialAssignment.forValue(name + '[' + i + ']', Array.get(array, i)));
+            list.add(potentialAssignmentForArrayElement(name, array, i));
         }
     }
 
@@ -116,8 +116,13 @@ public class AllMembersSupplier extends ParameterSupplier {
             if (!sig.canAcceptValue(Array.get(array, i))) {
                 return;
             }
-            list.add(PotentialAssignment.forValue(name + '[' + i + ']', Array.get(array, i)));
+            list.add(potentialAssignmentForArrayElement(name, array, i));
         }
+    }
+
+    private PotentialAssignment potentialAssignmentForArrayElement(String name, Object array,
+            int index) {
+        return PotentialAssignment.forValue(name + '[' + index + ']', Array.get(array, index));
     }
 
     private Object getStaticFieldValue(final Field field) {
