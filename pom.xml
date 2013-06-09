@@ -15,6 +15,17 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/junit-team/junit.contrib/issues</url>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>Eclipse Public License v 1.0</name>
+            <url>http://www.eclipse.org/legal/epl-v10.html</url>
+        </license>
+    </licenses>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
