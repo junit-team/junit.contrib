@@ -15,11 +15,11 @@
     <packaging>jar</packaging>
     <name>junit-theories</name>
     <description>JUnit theories runner</description>
-    <url>https://github.com/junit-team/junit.contrib/theories</url>
+    <url>https://github.com/pholser/junit-theories</url>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/junit-team/junit.contrib/issues</url>
+        <url>https://github.com/pholser/junit-theories/issues</url>
     </issueManagement>
     <licenses>
         <license>
@@ -28,9 +28,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:ssh://git@github.com:junit-team/junit.contrib.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:junit-team/junit.contrib.git</developerConnection>
-        <url>http://github.com/junit-team/junit.contrib/theories</url>
+        <connection>scm:git:ssh://git@github.com:pholser/junit-theories.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:pholser/junit-theories.git</developerConnection>
+        <url>http://github.com/pholser/junit-theories</url>
     </scm>
     <developers>
         <developer>
