@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <groupId>org.junit.contrib</groupId>
+    <artifactId>junit-theories</artifactId>
+    <version>4.11-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>junit-theories</name>
+    <description>JUnit theories runner</description>
+    <url>https://github.com/pholser/junit-theories</url>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/pholser/junit-theories/issues</url>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>Eclipse Public License v 1.0</name>
+            <url>http://www.eclipse.org/legal/epl-v10.html</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:ssh://git@github.com:pholser/junit-theories.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:pholser/junit-theories.git</developerConnection>
+        <url>http://github.com/pholser/junit-theories</url>
+    </scm>
+    <developers>
+        <developer>
+            <id>pholser</id>
+            <name>Paul Holser</name>
+            <email>pholser@alumni.rice.edu</email>
+            <url>http://www.pholser.com</url>
+        </developer>
+    </developers>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javaruntype</groupId>
+            <artifactId>javaruntype</artifactId>
+            <version>1.2</version>
+        </dependency>
+    </dependencies>
+</project>
