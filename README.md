@@ -3,7 +3,7 @@ JUnit Theories Runner
 
 This is a port of the JUnit theories runner into junit.contrib.
 
-In addition to being current with the theories implementation in the latest release of JUnit and
+In addition to being current with the theories implementation in JUnit 4.11 and
 depending on its core, this implementation contains a resolution for
 [JUnit GitHub issue 64](http://github.com/KentBeck/junit/issues/64), making it possible for
 [junit-quickcheck](http://github.com/pholser/junit-quickcheck) to generate values for theory
@@ -84,9 +84,9 @@ We can eliminate duplicated test logic sometimes by using parameterized tests:
 Neither of these tests expresses important characteristics we want the the answers given by
 `PrimeFactors.of()` to exhibit: No matter what positive integer you give the method...
 
-* The factors should be prime
-* The factors should multiply together to give the original integer
-* No two factorizations of two distinct integers are identical
+* The factors must be prime
+* The factors must multiply together to give the original integer
+* Factorizations of two distinct integers must themselves be distinct (the Fundamental Theorem of Arithmetic)
 
 Whenever we want to express characteristics of a test subject that hold for entire classes of
 inputs, and we can express the characteristics in terms of inputs and outputs, we can codify these
