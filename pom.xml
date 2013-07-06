@@ -28,8 +28,8 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:ssh://git@github.com:pholser/junit-theories.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:pholser/junit-theories.git</developerConnection>
+        <connection>scm:git:git@github.com:pholser/junit-theories.git</connection>
+        <developerConnection>scm:git:git@github.com:pholser/junit-theories.git</developerConnection>
         <url>http://github.com/pholser/junit-theories</url>
     </scm>
     <developers>
