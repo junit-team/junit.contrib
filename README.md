@@ -17,6 +17,22 @@ releases of JUnit.
 as `org.junit.contrib.theories.*`, rather than `org.junit.experimental.theories.*`. Be careful not
 to intermix the two.
 
+## Downloading
+
+Releases are synced to the central Maven repository. Declare a dependency element in your POM like so:
+
+    ...
+    <dependencies>
+      ...
+      <dependency>
+        <groupId>org.junit.contrib</groupId>
+        <artifactId>junit-theories</artifactId>
+        <version>4.11</version>
+      </dependency>
+      ...
+    </dependencies>
+    ...
+
 ### What is a theory?
 
 Most JUnit tests are example-based: given a specific set of inputs, the test subject behaves in a
