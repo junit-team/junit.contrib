@@ -14,8 +14,8 @@ so that the one in the core can be removed, meaning that this runner can evolve 
 releases of JUnit.
 
 **PLEASE NOTE**: The classes that comprise this rendition of the JUnit theories runner are packaged
-as `org.junit.contrib.theories.*`, rather than `org.junit.experimental.theories.*`. Be careful not
-to intermix the two.
+as `org.junit.contrib.theories.*`, rather than `org.junit.experimental.theories.*`. Be mindful of
+which one you're using.
 
 ## Downloading
 
