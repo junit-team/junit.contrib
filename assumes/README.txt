@@ -10,7 +10,7 @@ public class MyListTest {
 
  @Test
  public void newListIsEmpty() {
-   assertThat(new MyList().isEmpty(), is(true);
+   assertThat(new MyList().isEmpty(), is(true));
  }
 
  @Test
@@ -69,7 +69,7 @@ tests are passing, e.g.
  }
 
  @Test
- @Assumes({"newListIsEmpty","addPutsAnElementIntoAnEmptyList")
+ @Assumes({"newListIsEmpty","addPutsAnElementIntoAnEmptyList"})
  public void deleteRemovesAnElement() {
    MyList l = new MyList();
    Object o = new Object();
@@ -90,7 +90,7 @@ assumptions that I didn't make explicit
 and
 
  @Test
- @Assumes({"newListIsEmpty","addPutsAnElementIntoAnEmptyList")
+ @Assumes({"newListIsEmpty","addPutsAnElementIntoAnEmptyList"})
  public void addIncreasesSizeOfPopulatedListByOne() {
    ...
  }
