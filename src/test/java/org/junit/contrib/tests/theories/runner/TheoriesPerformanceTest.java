@@ -14,11 +14,9 @@ import static org.junit.experimental.results.ResultMatchers.*;
 public class TheoriesPerformanceTest {
     @RunWith(Theories.class)
     public static class UpToTen {
-        @DataPoints
-        public static final int[] ints = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        @DataPoints public static final int[] ints = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-        @Theory
-        public void threeInts(int x, int y, int z) {
+        @Theory public void threeInts(int x, int y, int z) {
             // pass always
         }
     }
@@ -30,8 +28,7 @@ public class TheoriesPerformanceTest {
     //
     // Likewise, the TestClass must be passed into AllMembersSupplier, or the
     // annotation parsing is again costly.
-    @Test
-    public void tryCombinationsQuickly() {
+    @Test public void tryCombinationsQuickly() {
         assumeTrue(TESTING_PERFORMANCE);
         assertThat(testResult(UpToTen.class), isSuccessful());
     }

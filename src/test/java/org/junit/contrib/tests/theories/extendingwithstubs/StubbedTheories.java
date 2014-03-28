@@ -1,16 +1,16 @@
 package org.junit.contrib.tests.theories.extendingwithstubs;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.AssumptionViolatedException;
 import org.junit.contrib.theories.ParameterSignature;
 import org.junit.contrib.theories.Theories;
 import org.junit.contrib.theories.internal.Assignments;
-import org.junit.internal.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StubbedTheories extends Theories {
     public StubbedTheories(Class<?> klass) throws InitializationError {
@@ -47,7 +47,7 @@ public class StubbedTheories extends Theories {
             queues.remove(guessers);
         }
 
-        private GuesserQueue createGuesserQueue(Assignments incomplete) throws Exception {
+        private GuesserQueue createGuesserQueue(Assignments incomplete) throws Throwable {
             ParameterSignature nextUnassigned = incomplete.nextUnassigned();
 
             if (nextUnassigned.hasAnnotation(Stub.class)) {

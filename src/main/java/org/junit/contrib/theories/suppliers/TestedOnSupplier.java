@@ -1,12 +1,11 @@
 package org.junit.contrib.theories.suppliers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.contrib.theories.ParameterSignature;
 import org.junit.contrib.theories.ParameterSupplier;
 import org.junit.contrib.theories.PotentialAssignment;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class TestedOnSupplier extends ParameterSupplier {
     @Override

@@ -17,12 +17,10 @@ public class WithOnlyTestAnnotationsTest {
     public static class HonorExpectedException {
         @Test(expected = NullPointerException.class)
         public void shouldThrow() {
-
         }
     }
 
-    @Test
-    public void honorExpected() throws Exception {
+    @Test public void honorExpected() throws Exception {
         assertThat(testResult(HonorExpectedException.class).failureCount(), is(1));
     }
 
@@ -34,42 +32,35 @@ public class WithOnlyTestAnnotationsTest {
         }
     }
 
-    @Test
-    public void honorExpectedPassing() throws Exception {
+    @Test public void honorExpectedPassing() throws Exception {
         assertThat(testResult(HonorExpectedExceptionPasses.class), isSuccessful());
     }
 
     @RunWith(Theories.class)
     public static class HonorTimeout {
-        @Test(timeout = 5)
-        public void shouldStop() {
+        @Test(timeout = 5) public void shouldStop() {
             while (true) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-
                 }
             }
         }
     }
 
-    @Test
-    public void honorTimeout() throws Exception {
+    @Test public void honorTimeout() throws Exception {
         assertThat(testResult(HonorTimeout.class), failureCountIs(1));
     }
 
     @RunWith(Theories.class)
     static public class ErrorWhenTestHasParametersDespiteTheories {
-        @DataPoint
-        public static int ZERO = 0;
+        @DataPoint public static final int ZERO = 0;
 
-        @Test
-        public void testMethod(int i) {
+        @Test public void testMethod(int i) {
         }
     }
 
-    @Test
-    public void testErrorWhenTestHasParametersDespiteTheories() {
+    @Test public void testErrorWhenTestHasParametersDespiteTheories() {
         JUnitCore core = new JUnitCore();
         Result result = core.run(ErrorWhenTestHasParametersDespiteTheories.class);
         assertEquals(1, result.getFailureCount());

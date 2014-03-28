@@ -1,11 +1,11 @@
 package org.junit.contrib.tests.theories.extendingwithstubs;
 
-import org.junit.contrib.theories.PotentialAssignment;
-import org.junit.internal.AssumptionViolatedException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.AssumptionViolatedException;
+import org.junit.contrib.theories.PotentialAssignment;
 
 public class GuesserQueue extends ArrayList<ReguessableValue> {
     static class ReguessableDecorator extends ReguessableValue {

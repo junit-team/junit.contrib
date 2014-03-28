@@ -1,28 +1,31 @@
 package org.junit.contrib.theories.internal;
 
-import org.junit.contrib.theories.ParameterSignature;
-import org.junit.contrib.theories.ParameterSupplier;
-import org.junit.contrib.theories.ParametersSuppliedBy;
-import org.junit.contrib.theories.PotentialAssignment;
-import org.junit.contrib.theories.PotentialAssignment.CouldNotGenerateValueException;
-import org.junit.runners.model.TestClass;
-
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.contrib.theories.ParameterSignature;
+import org.junit.contrib.theories.ParameterSupplier;
+import org.junit.contrib.theories.ParametersSuppliedBy;
+import org.junit.contrib.theories.PotentialAssignment;
+import org.junit.runners.model.TestClass;
+
+import static java.util.Collections.*;
+import static org.javaruntype.type.Types.*;
+
 /**
- * <p>A potentially incomplete list of value assignments for a method's formal parameters.</p>
- *
- * <p>Instances are intended to be immutable.</p>
+ * A potentially incomplete list of value assignments for a method's formal
+ * parameters
  */
 public class Assignments {
-    private final List<PotentialAssignment> fAssigned;
+    private List<PotentialAssignment> fAssigned;
+
     private final List<ParameterSignature> fUnassigned;
+
     private final TestClass fClass;
 
-    private Assignments(List<PotentialAssignment> assigned, List<ParameterSignature> unassigned,
-            TestClass testClass) {
+    private Assignments(List<PotentialAssignment> assigned, List<ParameterSignature> unassigned, TestClass testClass) {
         fUnassigned = unassigned;
         fAssigned = assigned;
         fClass = testClass;
@@ -31,11 +34,10 @@ public class Assignments {
     /**
      * Returns a new assignment list for {@code testMethod}, with no params assigned.
      */
-    public static Assignments allUnassigned(Method testMethod, TestClass testClass)
-            throws Exception {
-        List<ParameterSignature> signatures =
-                ParameterSignature.signatures(testClass.getOnlyConstructor());
+    public static Assignments allUnassigned(Method testMethod, TestClass testClass) throws Exception {
+        List<ParameterSignature> signatures = ParameterSignature.signatures(testClass.getOnlyConstructor());
         signatures.addAll(ParameterSignature.signatures(testMethod));
+
         return new Assignments(new ArrayList<PotentialAssignment>(), signatures, testClass);
     }
 
@@ -54,62 +56,80 @@ public class Assignments {
         return new Assignments(assigned, fUnassigned.subList(1, fUnassigned.size()), fClass);
     }
 
-    public Object[] getActualValues(int start, int stop, boolean nullsOk)
-            throws CouldNotGenerateValueException {
+    public Object[] getActualValues(int start, int stop) throws PotentialAssignment.CouldNotGenerateValueException {
         Object[] values = new Object[stop - start];
         for (int i = start; i < stop; i++) {
-            Object value = fAssigned.get(i).getValue();
-            if (value == null && !nullsOk) {
-                throw new CouldNotGenerateValueException();
-            }
-            values[i - start] = value;
+            values[i - start] = fAssigned.get(i).getValue();
         }
         return values;
     }
 
-    public List<PotentialAssignment> potentialsForNextUnassigned()
-            throws InstantiationException, IllegalAccessException {
-
+    public List<PotentialAssignment> potentialsForNextUnassigned() throws Throwable {
         ParameterSignature unassigned = nextUnassigned();
-        return getSupplier(unassigned).getValueSources(unassigned);
-    }
+        List<PotentialAssignment> assignments = getSupplier(unassigned).getValueSources(unassigned);
 
-    public ParameterSupplier getSupplier(ParameterSignature unassigned)
-            throws InstantiationException, IllegalAccessException {
-
-        ParameterSupplier supplier = getAnnotatedSupplier(unassigned);
-        if (supplier != null) {
-            return supplier;
+        if (assignments.size() == 0) {
+            assignments = generateAssignmentsFromTypeAlone(unassigned);
         }
 
-        return new AllMembersSupplier(fClass);
+        return assignments;
     }
 
-    public ParameterSupplier getAnnotatedSupplier(ParameterSignature unassigned)
-            throws InstantiationException, IllegalAccessException {
+    private List<PotentialAssignment> generateAssignmentsFromTypeAlone(ParameterSignature unassigned) {
+        org.javaruntype.type.Type<?> paramType = forJavaLangReflectType(unassigned.getType());
+        Class<?> klass = paramType.getRawClass();
 
+        if (klass.isEnum()) {
+            return new EnumSupplier(klass).getValueSources(unassigned);
+        } else if (klass.equals(Boolean.class) || klass.equals(boolean.class)) {
+            return new BooleanSupplier().getValueSources(unassigned);
+        } else {
+            return emptyList();
+        }
+    }
+
+    private ParameterSupplier getSupplier(ParameterSignature unassigned) throws Exception {
         ParametersSuppliedBy annotation = unassigned.findDeepAnnotation(ParametersSuppliedBy.class);
-        if (annotation == null) {
-            return null;
+
+        if (annotation != null) {
+            return buildParameterSupplierFromClass(annotation.value());
+        } else {
+            return new AllMembersSupplier(fClass);
         }
-        return annotation.value().newInstance();
     }
 
-    public Object[] getConstructorArguments(boolean nullsOk) throws CouldNotGenerateValueException {
-        return getActualValues(0, getConstructorParameterCount(), nullsOk);
+    private ParameterSupplier buildParameterSupplierFromClass(Class<? extends ParameterSupplier> cls) throws Exception {
+        Constructor<?>[] supplierConstructors = cls.getConstructors();
+
+        for (Constructor<?> constructor : supplierConstructors) {
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            if (parameterTypes.length == 1 && parameterTypes[0].equals(TestClass.class)) {
+                return (ParameterSupplier) constructor.newInstance(fClass);
+            }
+        }
+
+        return cls.newInstance();
     }
 
-    public Object[] getMethodArguments(boolean nullsOk) throws CouldNotGenerateValueException {
-        return getActualValues(getConstructorParameterCount(), fAssigned.size(), nullsOk);
+    public Object[] getConstructorArguments()
+            throws PotentialAssignment.CouldNotGenerateValueException {
+        return getActualValues(0, getConstructorParameterCount());
+    }
+
+    public Object[] getMethodArguments() throws PotentialAssignment.CouldNotGenerateValueException {
+        return getActualValues(getConstructorParameterCount(), fAssigned.size());
+    }
+
+    public Object[] getAllArguments() throws PotentialAssignment.CouldNotGenerateValueException {
+        return getActualValues(0, fAssigned.size());
     }
 
     private int getConstructorParameterCount() {
-        List<ParameterSignature> signatures =
-                ParameterSignature.signatures(fClass.getOnlyConstructor());
+        List<ParameterSignature> signatures = ParameterSignature.signatures(fClass.getOnlyConstructor());
         return signatures.size();
     }
 
-    public Object[] getArgumentStrings(boolean nullsOk) throws CouldNotGenerateValueException {
+    public Object[] getArgumentStrings(boolean nullsOk) throws PotentialAssignment.CouldNotGenerateValueException {
         Object[] values = new Object[fAssigned.size()];
         for (int i = 0; i < values.length; i++) {
             values[i] = fAssigned.get(i).getDescription();

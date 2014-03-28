@@ -1,8 +1,17 @@
 package org.junit.contrib.theories;
 
+import static java.lang.String.format;
+
 public abstract class PotentialAssignment {
     public static class CouldNotGenerateValueException extends Exception {
         private static final long serialVersionUID = 1L;
+
+        public CouldNotGenerateValueException() {
+        }
+
+        public CouldNotGenerateValueException(Throwable e) {
+            super(e);
+        }
     }
 
     public static PotentialAssignment forValue(final String name, final Object value) {
@@ -14,12 +23,24 @@ public abstract class PotentialAssignment {
 
             @Override
             public String toString() {
-                return String.format("[%s]", value);
+                return format("[%s]", value);
             }
 
             @Override
             public String getDescription() {
-                return name;
+                String valueString;
+
+                if (value == null) {
+                    valueString = "null";
+                } else {
+                    try {
+                        valueString = format("\"%s\"", value);
+                    } catch (Throwable e) {
+                        valueString = format("[toString() threw %s: %s]", e.getClass().getSimpleName(), e.getMessage());
+                    }
+                }
+
+                return format("%s <from %s>", valueString, name);
             }
         };
     }
