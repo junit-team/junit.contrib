@@ -8,8 +8,7 @@ import org.junit.contrib.theories.ParameterSupplier;
 import org.junit.contrib.theories.PotentialAssignment;
 
 public class TestedOnSupplier extends ParameterSupplier {
-    @Override
-    public List<PotentialAssignment> getValueSources(ParameterSignature sig) {
+    @Override public List<PotentialAssignment> getValueSources(ParameterSignature sig) {
         List<PotentialAssignment> list = new ArrayList<PotentialAssignment>();
 
         TestedOn testedOn = sig.getAnnotation(TestedOn.class);

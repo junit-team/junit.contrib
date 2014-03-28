@@ -10,11 +10,7 @@ public class StringableObject {
     }
 
     public Object stringableObject() {
-        if (isListableArray()) {
-            return Arrays.asList((Object[]) obj);
-        } else {
-            return obj;
-        }
+        return isListableArray() ? Arrays.asList((Object[]) obj) : obj;
     }
 
     private boolean isListableArray() {
@@ -22,8 +18,7 @@ public class StringableObject {
         return type.isArray() && !type.getComponentType().isPrimitive();
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return stringableObject().toString();
     }
 }

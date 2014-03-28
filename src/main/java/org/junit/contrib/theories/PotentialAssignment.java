@@ -6,9 +6,6 @@ public abstract class PotentialAssignment {
     public static class CouldNotGenerateValueException extends Exception {
         private static final long serialVersionUID = 1L;
 
-        public CouldNotGenerateValueException() {
-        }
-
         public CouldNotGenerateValueException(Throwable e) {
             super(e);
         }
@@ -16,18 +13,15 @@ public abstract class PotentialAssignment {
 
     public static PotentialAssignment forValue(final String name, final Object value) {
         return new PotentialAssignment() {
-            @Override
-            public Object getValue() {
+            @Override public Object getValue() {
                 return value;
             }
 
-            @Override
-            public String toString() {
+            @Override public String toString() {
                 return format("[%s]", value);
             }
 
-            @Override
-            public String getDescription() {
+            @Override public String getDescription() {
                 String valueString;
 
                 if (value == null) {

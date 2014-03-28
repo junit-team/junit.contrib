@@ -2,7 +2,6 @@ package org.junit.contrib.theories.internal;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -19,9 +18,6 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.TestClass;
 
-/**
- * Supplies Theory parameters based on all public members of the target class.
- */
 public class AllMembersSupplier extends ParameterSupplier {
     static class MethodParameterValue extends PotentialAssignment {
         private final FrameworkMethod fMethod;
@@ -30,8 +26,7 @@ public class AllMembersSupplier extends ParameterSupplier {
             fMethod = dataPointMethod;
         }
 
-        @Override
-        public Object getValue() throws CouldNotGenerateValueException {
+        @Override public Object getValue() throws CouldNotGenerateValueException {
             try {
                 return fMethod.invokeExplosively(null);
             } catch (IllegalArgumentException e) {
@@ -46,114 +41,107 @@ public class AllMembersSupplier extends ParameterSupplier {
             }
         }
 
-        @Override
-        public String getDescription() throws CouldNotGenerateValueException {
+        @Override public String getDescription() throws CouldNotGenerateValueException {
             return fMethod.getName();
         }
     }
 
     private final TestClass fClass;
 
-    /**
-     * Constructs a new supplier for {@code type}
-     */
     public AllMembersSupplier(TestClass type) {
         fClass = type;
     }
 
-    @Override
-    public List<PotentialAssignment> getValueSources(ParameterSignature sig) throws Throwable {
-        List<PotentialAssignment> list = new ArrayList<PotentialAssignment>();
+    @Override public List<PotentialAssignment> getValueSources(ParameterSignature sig) throws Throwable {
+        List<PotentialAssignment> assignments = new ArrayList<PotentialAssignment>();
 
-        addSinglePointFields(sig, list);
-        addMultiPointFields(sig, list);
-        addSinglePointMethods(sig, list);
-        addMultiPointMethods(sig, list);
+        addSinglePointFields(sig, assignments);
+        addMultiPointFields(sig, assignments);
+        addSinglePointMethods(sig, assignments);
+        addMultiPointMethods(sig, assignments);
 
-        return list;
+        return assignments;
     }
 
-    private void addMultiPointMethods(ParameterSignature sig, List<PotentialAssignment> list) throws Throwable {
-        for (FrameworkMethod dataPointsMethod : getDataPointsMethods(sig)) {
-            Type returnType = dataPointsMethod.getMethod().getGenericReturnType();
-            org.javaruntype.type.Type<?> token = Types.forJavaLangReflectType(returnType);
+    private void addMultiPointMethods(ParameterSignature sig, List<PotentialAssignment> assignments) throws Throwable {
+        for (FrameworkMethod each : getDataPointsMethods(sig)) {
+            org.javaruntype.type.Type<?> type = Types.forJavaLangReflectType(each.getMethod().getGenericReturnType());
 
-            if ((token.isArray() && sig.canPotentiallyAcceptType(token.getComponentClass())) ||
-                    Types.forJavaLangReflectType(Iterable.class).isAssignableFrom(token)) {
+            if ((type.isArray() && sig.canPotentiallyAcceptType(type.getComponentClass())) ||
+                    Types.forJavaLangReflectType(Iterable.class).isAssignableFrom(type)) {
                 try {
-                    addDataPointsValues(token, sig, dataPointsMethod.getName(), list,
-                            dataPointsMethod.invokeExplosively(null));
-                } catch (Throwable throwable) {
-                    DataPoints annotation = dataPointsMethod.getAnnotation(DataPoints.class);
-                    if (annotation != null && isAssignableToAnyOf(annotation.ignoredExceptions(), throwable)) {
+                    addDataPointsValues(type, sig, each.getName(), assignments, each.invokeExplosively(null));
+                } catch (Throwable e) {
+                    DataPoints annotation = each.getAnnotation(DataPoints.class);
+                    if (annotation != null && isAssignableToAnyOf(annotation.ignoredExceptions(), e)) {
                         return;
                     } else {
-                        throw throwable;
+                        throw e;
                     }
                 }
             }
         }
     }
 
-    private void addSinglePointMethods(ParameterSignature sig, List<PotentialAssignment> list) {
-        for (FrameworkMethod dataPointMethod : getSingleDataPointMethods(sig)) {
-            if (sig.canAcceptType(dataPointMethod.getMethod().getGenericReturnType())) {
-                list.add(new MethodParameterValue(dataPointMethod));
+    private void addSinglePointMethods(ParameterSignature sig, List<PotentialAssignment> assignments) {
+        for (FrameworkMethod each : getSingleDataPointMethods(sig)) {
+            if (sig.canAcceptType(each.getMethod().getGenericReturnType())) {
+                assignments.add(new MethodParameterValue(each));
             }
         }
     }
 
-    private void addMultiPointFields(ParameterSignature sig, List<PotentialAssignment> list) {
-        for (final Field field : getDataPointsFields(sig)) {
-            Type type = field.getGenericType();
-            addDataPointsValues(Types.forJavaLangReflectType(type), sig, field.getName(), list,
-                    getStaticFieldValue(field));
+    private void addMultiPointFields(ParameterSignature sig, List<PotentialAssignment> assignments) {
+        for (Field each : getDataPointsFields(sig)) {
+            addDataPointsValues(Types.forJavaLangReflectType(each.getGenericType()), sig, each.getName(), assignments,
+                    getStaticFieldValue(each));
         }
     }
 
-    private void addSinglePointFields(ParameterSignature sig, List<PotentialAssignment> list) {
-        for (final Field field : getSingleDataPointFields(sig)) {
-            Object value = getStaticFieldValue(field);
+    private void addSinglePointFields(ParameterSignature sig, List<PotentialAssignment> assignments) {
+        for (Field each : getSingleDataPointFields(sig)) {
+            Object value = getStaticFieldValue(each);
 
-            if (sig.canAcceptType(field.getGenericType())) {
-                list.add(PotentialAssignment.forValue(field.getName(), value));
+            if (sig.canAcceptType(each.getGenericType())) {
+                assignments.add(PotentialAssignment.forValue(each.getName(), value));
             }
         }
     }
 
     private void addDataPointsValues(org.javaruntype.type.Type<?> type, ParameterSignature sig, String name,
-                                     List<PotentialAssignment> list, Object value) {
+                                     List<PotentialAssignment> assignments, Object value) {
         if (type.isArray()) {
-            addArrayValues(sig, name, list, value);
-        }
-        else if (Types.forJavaLangReflectType(Iterable.class).isAssignableFrom(type)) {
-            addIterableValues(sig, name, list, (Iterable<?>) value);
+            addArrayValues(sig, name, assignments, value);
+        } else if (Types.forJavaLangReflectType(Iterable.class).isAssignableFrom(type)) {
+            addIterableValues(sig, name, assignments, (Iterable<?>) value);
         }
     }
 
-    private void addArrayValues(ParameterSignature sig, String name, List<PotentialAssignment> list, Object array) {
-        for (int i = 0; i < Array.getLength(array); i++) {
+    private void addArrayValues(ParameterSignature sig, String name, List<PotentialAssignment> assignments,
+            Object array) {
+
+        for (int i = 0, len = Array.getLength(array); i < len; i++) {
             Object value = Array.get(array, i);
             if (sig.canAcceptValue(value)) {
-                list.add(PotentialAssignment.forValue(name + "[" + i + "]", value));
+                assignments.add(PotentialAssignment.forValue(name + "[" + i + "]", value));
             }
         }
     }
 
-    private void addIterableValues(ParameterSignature sig, String name, List<PotentialAssignment> list,
+    private void addIterableValues(ParameterSignature sig, String name, List<PotentialAssignment> assignments,
                                    Iterable<?> iterable) {
         Iterator<?> iterator = iterable.iterator();
         int i = 0;
         while (iterator.hasNext()) {
             Object value = iterator.next();
             if (sig.canAcceptValue(value)) {
-                list.add(PotentialAssignment.forValue(name + "[" + i + "]", value));
+                assignments.add(PotentialAssignment.forValue(name + "[" + i + "]", value));
             }
             i += 1;
         }
     }
 
-    private Object getStaticFieldValue(final Field field) {
+    private Object getStaticFieldValue(Field field) {
         try {
             return field.get(null);
         } catch (IllegalArgumentException e) {
@@ -163,9 +151,9 @@ public class AllMembersSupplier extends ParameterSupplier {
         }
     }
 
-    private static boolean isAssignableToAnyOf(Class<?>[] typeArray, Object target) {
-        for (Class<?> type : typeArray) {
-            if (type.isAssignableFrom(target.getClass())) {
+    private static boolean isAssignableToAnyOf(Class<?>[] types, Object target) {
+        for (Class<?> each : types) {
+            if (each.isAssignableFrom(target.getClass())) {
                 return true;
             }
         }
@@ -177,22 +165,20 @@ public class AllMembersSupplier extends ParameterSupplier {
     }
 
     protected Collection<Field> getSingleDataPointFields(ParameterSignature sig) {
-        List<FrameworkField> fields = fClass.getAnnotatedFields(DataPoint.class);
         Collection<Field> validFields = new ArrayList<Field>();
 
-        for (FrameworkField frameworkField : fields) {
-            validFields.add(frameworkField.getField());
+        for (FrameworkField each : fClass.getAnnotatedFields(DataPoint.class)) {
+            validFields.add(each.getField());
         }
 
         return validFields;
     }
 
     protected Collection<Field> getDataPointsFields(ParameterSignature sig) {
-        List<FrameworkField> fields = fClass.getAnnotatedFields(DataPoints.class);
         Collection<Field> validFields = new ArrayList<Field>();
 
-        for (FrameworkField frameworkField : fields) {
-            validFields.add(frameworkField.getField());
+        for (FrameworkField each : fClass.getAnnotatedFields(DataPoints.class)) {
+            validFields.add(each.getField());
         }
 
         return validFields;

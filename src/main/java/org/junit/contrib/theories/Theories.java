@@ -25,52 +25,45 @@ public class Theories extends BlockJUnit4ClassRunner {
         super(klass);
     }
 
-    @Override
-    protected void collectInitializationErrors(List<Throwable> errors) {
+    @Override protected void collectInitializationErrors(List<Throwable> errors) {
         super.collectInitializationErrors(errors);
         validateDataPointFields(errors);
         validateDataPointMethods(errors);
     }
 
     private void validateDataPointFields(List<Throwable> errors) {
-        Field[] fields = getTestClass().getJavaClass().getDeclaredFields();
-
-        for (Field field : fields) {
-            if (field.getAnnotation(DataPoint.class) == null && field.getAnnotation(DataPoints.class) == null) {
+        for (Field each : getTestClass().getJavaClass().getDeclaredFields()) {
+            if (each.getAnnotation(DataPoint.class) == null && each.getAnnotation(DataPoints.class) == null) {
                 continue;
             }
-            if (!Modifier.isStatic(field.getModifiers())) {
-                errors.add(new Error("DataPoint field " + field.getName() + " must be static"));
+            if (!Modifier.isStatic(each.getModifiers())) {
+                errors.add(new Error("DataPoint field " + each.getName() + " must be static"));
             }
-            if (!Modifier.isPublic(field.getModifiers())) {
-                errors.add(new Error("DataPoint field " + field.getName() + " must be public"));
+            if (!Modifier.isPublic(each.getModifiers())) {
+                errors.add(new Error("DataPoint field " + each.getName() + " must be public"));
             }
         }
     }
 
     private void validateDataPointMethods(List<Throwable> errors) {
-        Method[] methods = getTestClass().getJavaClass().getDeclaredMethods();
-
-        for (Method method : methods) {
-            if (method.getAnnotation(DataPoint.class) == null && method.getAnnotation(DataPoints.class) == null) {
+        for (Method each : getTestClass().getJavaClass().getDeclaredMethods()) {
+            if (each.getAnnotation(DataPoint.class) == null && each.getAnnotation(DataPoints.class) == null) {
                 continue;
             }
-            if (!Modifier.isStatic(method.getModifiers())) {
-                errors.add(new Error("DataPoint method " + method.getName() + " must be static"));
+            if (!Modifier.isStatic(each.getModifiers())) {
+                errors.add(new Error("DataPoint method " + each.getName() + " must be static"));
             }
-            if (!Modifier.isPublic(method.getModifiers())) {
-                errors.add(new Error("DataPoint method " + method.getName() + " must be public"));
+            if (!Modifier.isPublic(each.getModifiers())) {
+                errors.add(new Error("DataPoint method " + each.getName() + " must be public"));
             }
         }
     }
 
-    @Override
-    protected void validateConstructor(List<Throwable> errors) {
+    @Override protected void validateConstructor(List<Throwable> errors) {
         validateOnlyOneConstructor(errors);
     }
 
-    @Override
-    protected void validateTestMethods(List<Throwable> errors) {
+    @Override protected void validateTestMethods(List<Throwable> errors) {
         for (FrameworkMethod each : computeTestMethods()) {
             if (each.getAnnotation(Theory.class) != null) {
                 each.validatePublicVoid(false, errors);
@@ -79,8 +72,8 @@ public class Theories extends BlockJUnit4ClassRunner {
                 each.validatePublicVoidNoArg(false, errors);
             }
 
-            for (ParameterSignature signature : signatures(each.getMethod())) {
-                ParametersSuppliedBy annotation = signature.findDeepAnnotation(ParametersSuppliedBy.class);
+            for (ParameterSignature sig : signatures(each.getMethod())) {
+                ParametersSuppliedBy annotation = sig.findDeepAnnotation(ParametersSuppliedBy.class);
                 if (annotation != null) {
                     validateParameterSupplier(annotation.value(), errors);
                 }
@@ -103,8 +96,7 @@ public class Theories extends BlockJUnit4ClassRunner {
         }
     }
 
-    @Override
-    protected List<FrameworkMethod> computeTestMethods() {
+    @Override protected List<FrameworkMethod> computeTestMethods() {
         List<FrameworkMethod> testMethods = new ArrayList<FrameworkMethod>(super.computeTestMethods());
         List<FrameworkMethod> theoryMethods = getTestClass().getAnnotatedMethods(Theory.class);
         testMethods.removeAll(theoryMethods);
@@ -112,18 +104,16 @@ public class Theories extends BlockJUnit4ClassRunner {
         return testMethods;
     }
 
-    @Override
-    public Statement methodBlock(final FrameworkMethod method) {
+    @Override public Statement methodBlock(FrameworkMethod method) {
         return new TheoryAnchor(method, getTestClass());
     }
 
     public static class TheoryAnchor extends Statement {
+        private final FrameworkMethod fTestMethod;
+        private final TestClass fTestClass;
+        private final List<AssumptionViolatedException> fInvalidParameters = new ArrayList<AssumptionViolatedException>();
+
         private int successes = 0;
-
-        private FrameworkMethod fTestMethod;
-        private TestClass fTestClass;
-
-        private List<AssumptionViolatedException> fInvalidParameters = new ArrayList<AssumptionViolatedException>();
 
         public TheoryAnchor(FrameworkMethod method, TestClass testClass) {
             fTestMethod = method;
@@ -134,8 +124,7 @@ public class Theories extends BlockJUnit4ClassRunner {
             return fTestClass;
         }
 
-        @Override
-        public void evaluate() throws Throwable {
+        @Override public void evaluate() throws Throwable {
             runWithAssignment(Assignments.allUnassigned(fTestMethod.getMethod(), getTestClass()));
 
             // if this test method is not annotated with Theory, then no successes is a valid case
@@ -155,20 +144,18 @@ public class Theories extends BlockJUnit4ClassRunner {
         }
 
         protected void runWithIncompleteAssignment(Assignments incomplete) throws Throwable {
-            for (PotentialAssignment source : incomplete.potentialsForNextUnassigned()) {
-                runWithAssignment(incomplete.assignNext(source));
+            for (PotentialAssignment each : incomplete.potentialsForNextUnassigned()) {
+                runWithAssignment(incomplete.assignNext(each));
             }
         }
 
         protected void runWithCompleteAssignment(final Assignments complete) throws Throwable {
             new BlockJUnit4ClassRunner(getTestClass().getJavaClass()) {
-                @Override
-                protected void collectInitializationErrors(List<Throwable> errors) {
+                @Override protected void collectInitializationErrors(List<Throwable> errors) {
                     // do nothing
                 }
 
-                @Override
-                public Statement methodBlock(FrameworkMethod method) {
+                @Override public Statement methodBlock(FrameworkMethod method) {
                     final Statement statement = super.methodBlock(method);
                     return new Statement() {
                         @Override
@@ -179,19 +166,17 @@ public class Theories extends BlockJUnit4ClassRunner {
                             } catch (AssumptionViolatedException e) {
                                 handleAssumptionViolation(e);
                             } catch (Throwable e) {
-                                reportParameterizedError(e, complete.getArgumentStrings(nullsOk()));
+                                reportParameterizedError(e, complete.getArgumentStrings());
                             }
                         }
                     };
                 }
 
-                @Override
-                protected Statement methodInvoker(FrameworkMethod method, Object test) {
+                @Override protected Statement methodInvoker(FrameworkMethod method, Object test) {
                     return methodCompletesWithParameters(method, complete, test);
                 }
 
-                @Override
-                public Object createTest() throws Exception {
+                @Override public Object createTest() throws Exception {
                     Object[] params = complete.getConstructorArguments();
 
                     if (!nullsOk()) {

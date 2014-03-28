@@ -117,8 +117,7 @@ public class ParameterSignature {
             }
 
             Annotation candidate =
-                    findDeepAnnotation(each.annotationType().getAnnotations(), annotationType,
-                            depth - 1);
+                    findDeepAnnotation(each.annotationType().getAnnotations(), annotationType, depth - 1);
             if (candidate != null) {
                 return annotationType.cast(candidate);
             }

@@ -15,26 +15,23 @@ public class GuesserQueue extends ArrayList<ReguessableValue> {
             this.delegate = delegate;
         }
 
-        @Override
-        public List<ReguessableValue> reguesses(AssumptionViolatedException e) {
+        @Override public List<ReguessableValue> reguesses(AssumptionViolatedException e) {
             return Collections.emptyList();
         }
 
-        @Override
-        public Object getValue() throws CouldNotGenerateValueException {
+        @Override public Object getValue() throws CouldNotGenerateValueException {
             return delegate.getValue();
         }
 
-        @Override
-        public String getDescription() throws CouldNotGenerateValueException {
+        @Override public String getDescription() throws CouldNotGenerateValueException {
             return delegate.getDescription();
         }
     }
 
     static GuesserQueue forSingleValues(List<PotentialAssignment> potentials) {
         GuesserQueue returnThis = new GuesserQueue();
-        for (PotentialAssignment potentialParameterValue : potentials) {
-            returnThis.add(new GuesserQueue.ReguessableDecorator(potentialParameterValue));
+        for (PotentialAssignment each : potentials) {
+            returnThis.add(new GuesserQueue.ReguessableDecorator(each));
         }
         return returnThis;
     }
@@ -48,8 +45,7 @@ public class GuesserQueue extends ArrayList<ReguessableValue> {
         }
     }
 
-    @Override
-    public ReguessableValue remove(int index) {
+    @Override public ReguessableValue remove(int index) {
         lastRemoved = super.remove(index);
         return lastRemoved;
     }

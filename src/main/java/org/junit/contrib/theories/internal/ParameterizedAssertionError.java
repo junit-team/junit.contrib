@@ -12,9 +12,8 @@ public class ParameterizedAssertionError extends AssertionError {
         initCause(targetException);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof ParameterizedAssertionError && toString().equals(obj.toString());
+    @Override public boolean equals(Object o) {
+        return o instanceof ParameterizedAssertionError && toString().equals(o.toString());
     }
 
     public static String join(String delimiter, Object... params) {
@@ -22,16 +21,17 @@ public class ParameterizedAssertionError extends AssertionError {
     }
 
     public static String join(String delimiter, Collection<Object> values) {
-        StringBuilder sb = new StringBuilder();
-        Iterator<Object> iter = values.iterator();
-        while (iter.hasNext()) {
+        StringBuilder buffer = new StringBuilder();
+
+        for (Iterator<Object> iter = values.iterator(); iter.hasNext();) {
             Object next = iter.next();
-            sb.append(stringValueOf(next));
+            buffer.append(stringValueOf(next));
             if (iter.hasNext()) {
-                sb.append(delimiter);
+                buffer.append(delimiter);
             }
         }
-        return sb.toString();
+
+        return buffer.toString();
     }
 
     private static String stringValueOf(Object next) {

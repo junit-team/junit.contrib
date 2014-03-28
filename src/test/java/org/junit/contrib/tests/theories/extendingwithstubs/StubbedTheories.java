@@ -17,8 +17,7 @@ public class StubbedTheories extends Theories {
         super(klass);
     }
 
-    @Override
-    public Statement methodBlock(FrameworkMethod method) {
+    @Override public Statement methodBlock(FrameworkMethod method) {
         return new StubbedTheoryAnchor(method, getTestClass());
     }
 
@@ -27,18 +26,16 @@ public class StubbedTheories extends Theories {
             super(method, testClass);
         }
 
-        private List<GuesserQueue> queues = new ArrayList<GuesserQueue>();
+        private final List<GuesserQueue> queues = new ArrayList<GuesserQueue>();
 
-        @Override
-        protected void handleAssumptionViolation(AssumptionViolatedException e) {
+        @Override protected void handleAssumptionViolation(AssumptionViolatedException e) {
             super.handleAssumptionViolation(e);
-            for (GuesserQueue queue : queues) {
-                queue.update(e);
+            for (GuesserQueue each : queues) {
+                each.update(e);
             }
         }
 
-        @Override
-        protected void runWithIncompleteAssignment(Assignments incomplete) throws Throwable {
+        @Override protected void runWithIncompleteAssignment(Assignments incomplete) throws Throwable {
             GuesserQueue guessers = createGuesserQueue(incomplete);
             queues.add(guessers);
             while (!guessers.isEmpty()) {

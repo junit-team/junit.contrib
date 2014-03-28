@@ -8,18 +8,16 @@ import org.junit.contrib.theories.ParameterSupplier;
 import org.junit.contrib.theories.PotentialAssignment;
 
 public class EnumSupplier extends ParameterSupplier {
-
     private final Class<?> enumType;
 
     public EnumSupplier(Class<?> enumType) {
         this.enumType = enumType;
     }
 
-    @Override
-    public List<PotentialAssignment> getValueSources(ParameterSignature sig) {
+    @Override public List<PotentialAssignment> getValueSources(ParameterSignature sig) {
         List<PotentialAssignment> assignments = new ArrayList<PotentialAssignment>();
-        for (Object value : enumType.getEnumConstants()) {
-            assignments.add(PotentialAssignment.forValue(value.toString(), value));
+        for (Object each : enumType.getEnumConstants()) {
+            assignments.add(PotentialAssignment.forValue(each.toString(), each));
         }
 
         return assignments;
