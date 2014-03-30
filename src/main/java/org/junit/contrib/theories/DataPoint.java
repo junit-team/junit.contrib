@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.*;
  * {@link FromDataPoints} annotation.</p>
  *
  * <p>Parameters with no specified source will use all data points that are assignable to the parameter type
- * as potential values, including named sets of data points.
+ * as potential values, including named sets of data points.</p>
  *
  * <pre>
  * &#064;DataPoint

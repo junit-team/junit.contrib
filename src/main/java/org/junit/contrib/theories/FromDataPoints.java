@@ -12,7 +12,7 @@ import static java.lang.annotation.RetentionPolicy.*;
  * <p>Marking a parameter of a {@link Theory} method with this annotation will limit the data points considered
  * as potential values for that parameter to only the {@link DataPoints} with the given name.</p>
  *
- * <p>DataPoints without names will not be considered as values for any parameters annotated with
+ * <p>Data points without names will not be considered as values for any parameters annotated with
  * &#064FromDataPoints.</p>
  *
  * <pre>
@@ -42,6 +42,7 @@ import static java.lang.annotation.RetentionPolicy.*;
  *
  * @see DataPoint
  * @see DataPoints
+ * @see Theories
  * @see Theory
  */
 @Retention(RUNTIME)

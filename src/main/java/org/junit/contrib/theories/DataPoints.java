@@ -23,7 +23,7 @@ import static java.lang.annotation.RetentionPolicy.*;
  * <p>Data points methods whose array types aren't assignable from the target parameter type (and so can't possibly
  * return relevant values) will not be called when generating values for that parameter. Iterable-typed data points
  * methods must always be called though, as this information is not available here after generic type erasure,
- * so expensive methods returning iterable data points are a bad idea.
+ * so expensive methods returning iterable data points are a bad idea.</p>
  *
  * <pre>
  * &#064;DataPoints
