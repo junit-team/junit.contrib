@@ -10,7 +10,7 @@ public class MyListTest {
 
  @Test
  public void newListIsEmpty() {
-   assertThat(new MyList().isEmpty(), is(true);
+   assertThat(new MyList().isEmpty(), is(true));
  }
 
  @Test
