@@ -9,7 +9,7 @@
 
     <groupId>org.junit.contrib</groupId>
     <artifactId>junit-theories</artifactId>
-    <version>4.12-SNAPSHOT</version>
+    <version>4.12-beta-1</version>
     <packaging>jar</packaging>
     <name>junit-theories</name>
     <description>JUnit theories runner</description>
