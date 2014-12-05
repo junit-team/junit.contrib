@@ -3,7 +3,7 @@ JUnit Theories Runner
 
 This is a port of the JUnit theories runner into junit.contrib.
 
-In addition to being current with the theories implementation in JUnit 4.11 and
+In addition to being current with the theories implementation in JUnit 4.12 and
 depending on its core, this implementation contains a resolution for
 [JUnit GitHub issue 64](http://github.com/junit-team/junit/issues/64), making it possible for
 [junit-quickcheck](http://github.com/pholser/junit-quickcheck) to generate values for theory
@@ -27,7 +27,7 @@ Releases are synced to the central Maven repository. Declare a dependency elemen
       <dependency>
         <groupId>org.junit.contrib</groupId>
         <artifactId>junit-theories</artifactId>
-        <version>4.11</version>
+        <version>4.12</version>
       </dependency>
       ...
     </dependencies>
