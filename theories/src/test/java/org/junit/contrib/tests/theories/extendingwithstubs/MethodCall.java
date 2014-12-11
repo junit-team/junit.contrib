@@ -14,14 +14,12 @@ public class MethodCall {
         this.args = args;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        MethodCall call = (MethodCall) obj;
+    @Override public boolean equals(Object o) {
+        MethodCall call = (MethodCall) o;
         return call.method.equals(method) && Arrays.deepEquals(call.args, args);
     }
 
-    @Override
-    public int hashCode() {
+    @Override public int hashCode() {
         return 1;
     }
 
@@ -29,8 +27,7 @@ public class MethodCall {
         return method.getReturnType();
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return String.format("%s(%s)", method.getName(), argListString());
     }
 
@@ -47,9 +44,5 @@ public class MethodCall {
             list.add(new StringableObject(arg));
         }
         return list;
-    }
-
-    public Object stringableObject(Object arg) {
-        return new StringableObject(arg).stringableObject();
     }
 }

@@ -1,5 +1,8 @@
 package org.junit.contrib.tests.theories.runner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -10,9 +13,6 @@ import org.junit.contrib.theories.Theory;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
@@ -21,45 +21,36 @@ import static org.junit.Assume.*;
 public class SuccessfulWithDataPointFieldsTest {
     @RunWith(Theories.class)
     public static class HasATwoParameterTheory {
-        @DataPoint
-        public static int ONE = 1;
+        @DataPoint public static final int ONE = 1;
 
-        @Theory
-        public void allIntsAreEqual(int x, int y) {
+        @Theory public void allIntsAreEqual(int x, int y) {
             assertThat(x, is(y));
         }
     }
 
     @RunWith(Theories.class)
     public static class BeforeAndAfterOnSameInstance {
-        @DataPoint
-        public static String A = "A";
+        @DataPoint public static final String A = "A";
 
         private int befores = 0;
 
-        @Before
-        public void incrementBefore() {
+        @Before public void incrementBefore() {
             befores++;
         }
 
-        @Theory
-        public void stringsAreOK(String string) {
+        @Theory public void stringsAreOK(String string) {
             assertTrue(befores == 1);
         }
     }
 
     @RunWith(Theories.class)
     public static class NewObjectEachTime {
-        @DataPoint
-        public static String A = "A";
-
-        @DataPoint
-        public static String B = "B";
+        @DataPoint public static final String A = "A";
+        @DataPoint public static final String B = "B";
 
         private List<String> list = new ArrayList<String>();
 
-        @Theory
-        public void addToEmptyList(String string) {
+        @Theory public void addToEmptyList(String string) {
             list.add(string);
             assertThat(list.size(), is(1));
         }
@@ -67,8 +58,7 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class PositiveInts {
-        @DataPoint
-        public static final int ONE = 1;
+        @DataPoint public static final int ONE = 1;
 
         private int x;
 
@@ -77,18 +67,15 @@ public class SuccessfulWithDataPointFieldsTest {
             this.x = x;
         }
 
-        @Theory
-        public void haveAPositiveSquare() {
+        @Theory public void haveAPositiveSquare() {
             assertTrue(x * x > 0);
         }
     }
 
     @RunWith(Theories.class)
     public static class PositiveIntsWithNegativeField {
-        @DataPoint
-        public static final int ONE = 1;
-        @DataPoint
-        public static final int NEGONE = -1;
+        @DataPoint public static final int ONE = 1;
+        @DataPoint public static final int NEGONE = -1;
 
         private int x;
 
@@ -97,16 +84,14 @@ public class SuccessfulWithDataPointFieldsTest {
             this.x = x;
         }
 
-        @Theory
-        public void haveAPostiveSquare() {
+        @Theory public void haveAPositiveSquare() {
             assertTrue(x > 0);
         }
     }
 
     @RunWith(Theories.class)
     public static class PositiveIntsWithMethodParams {
-        @DataPoint
-        public static final int ONE = 1;
+        @DataPoint public static final int ONE = 1;
 
         private int x;
 
@@ -115,8 +100,7 @@ public class SuccessfulWithDataPointFieldsTest {
             this.x = x;
         }
 
-        @Theory
-        public void haveAPostiveSquare(int y) {
+        @Theory public void haveAPositiveSquare(int y) {
             assumeTrue(y > 0);
             assertTrue(x * y > 0);
         }
@@ -124,17 +108,13 @@ public class SuccessfulWithDataPointFieldsTest {
 
     @RunWith(Theories.class)
     public static class DifferentTypesInConstructor {
-        @DataPoint
-        public static final int ONE = 1;
-
-        @DataPoint
-        public static final String A = "A";
+        @DataPoint public static final int ONE = 1;
+        @DataPoint public static final String A = "A";
 
         public DifferentTypesInConstructor(int x) {
         }
 
-        @Theory
-        public void yesIndeed(String a) {
+        @Theory public void yesIndeed(String a) {
         }
     }
 
@@ -142,28 +122,21 @@ public class SuccessfulWithDataPointFieldsTest {
     public static class BeforeAndAfterEachTime {
         public static int befores = 0;
 
-        @DataPoint
-        public static String A = "A";
+        @DataPoint public static final String A = "A";
+        @DataPoint public static final String B = "B";
 
-        @DataPoint
-        public static String B = "B";
-
-        @Before
-        public void incrementBefore() {
+        @Before public void incrementBefore() {
             befores++;
         }
 
-        @BeforeClass
-        public static void resetCalls() {
+        @BeforeClass public static void resetCalls() {
             befores = 0;
         }
 
-        @Theory
-        public void stringsAreOK(String string) {
+        @Theory public void stringsAreOK(String string) {
         }
 
-        @AfterClass
-        public static void calledTwice() {
+        @AfterClass public static void calledTwice() {
             assertEquals(2, befores);
         }
     }
@@ -172,22 +145,17 @@ public class SuccessfulWithDataPointFieldsTest {
     public static class OneTestTwoAnnotations {
         public static int tests = 0;
 
-        @DataPoint
-        public static String A = "A";
+        @DataPoint public static final String A = "A";
 
-        @BeforeClass
-        public static void resetCalls() {
+        @BeforeClass public static void resetCalls() {
             tests = 0;
         }
 
-        @Theory
-        @Test
-        public void stringsAreOK(String string) {
+        @Theory @Test public void stringsAreOK(String string) {
             tests++;
         }
 
-        @AfterClass
-        public static void calledTwice() {
+        @AfterClass public static void calledTwice() {
             assertEquals(1, tests);
         }
     }
@@ -195,14 +163,12 @@ public class SuccessfulWithDataPointFieldsTest {
     @RunWith(Theories.class)
     static public class StaticPublicNonDataPoints {
         // DataPoint which passes the test
-        @DataPoint
-        public static int ZERO = 0;
+        @DataPoint public static final int ZERO = 0;
 
         // Not annotated as a DataPoint and therefore should be ignored:
-        public static int ONE = 1;
+        public static final int ONE = 1;
 
-        @Theory
-        public void onlyAnnotatedFields(int i) {
+        @Theory public void onlyAnnotatedFields(int i) {
             assertTrue(i == 0);
         }
     }
