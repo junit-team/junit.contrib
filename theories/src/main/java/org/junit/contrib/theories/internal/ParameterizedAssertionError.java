@@ -4,17 +4,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class ParameterizedAssertionError extends RuntimeException {
+public class ParameterizedAssertionError extends AssertionError {
     private static final long serialVersionUID = 1L;
 
-    public ParameterizedAssertionError(Throwable targetException, String methodName,
-            Object... params) {
-        super(String.format("%s(%s)", methodName, join(", ", params)), targetException);
+    public ParameterizedAssertionError(Throwable targetException, String methodName, Object... params) {
+        super(String.format("%s(%s)", methodName, join(", ", params)));
+        initCause(targetException);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return toString().equals(obj.toString());
+    @Override public boolean equals(Object o) {
+        return o instanceof ParameterizedAssertionError && toString().equals(o.toString());
     }
 
     public static String join(String delimiter, Object... params) {
@@ -24,13 +23,14 @@ public class ParameterizedAssertionError extends RuntimeException {
     public static String join(String delimiter, Collection<Object> values) {
         StringBuilder buffer = new StringBuilder();
 
-        for (Iterator<Object> iter = values.iterator(); iter.hasNext(); ) {
+        for (Iterator<Object> iter = values.iterator(); iter.hasNext();) {
             Object next = iter.next();
             buffer.append(stringValueOf(next));
             if (iter.hasNext()) {
                 buffer.append(delimiter);
             }
         }
+
         return buffer.toString();
     }
 

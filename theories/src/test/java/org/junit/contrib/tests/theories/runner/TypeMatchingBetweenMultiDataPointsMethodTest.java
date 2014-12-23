@@ -14,43 +14,33 @@ import static org.junit.experimental.results.ResultMatchers.*;
 public class TypeMatchingBetweenMultiDataPointsMethodTest {
     @RunWith(Theories.class)
     public static class WithWrongfullyTypedDataPointsMethod {
-        @DataPoint
-        public static String[] correctlyTyped = { "Good", "Morning" };
+        @DataPoint public static String[] correctlyTyped = {"Good", "Morning"};
 
-        @DataPoints
-        public static String[] wrongfullyTyped() {
+        @DataPoints public static String[] wrongfullyTyped() {
             return new String[] { "Hello", "World" };
         }
 
-        @Theory
-        public void testTheory(String[] array) {
+        @Theory public void testTheory(String[] array) {
         }
     }
 
-    @Test
-    public void ignoreWrongTypedDataPointsMethod() {
+    @Test public void ignoreWrongTypedDataPointsMethod() {
         assertThat(testResult(WithWrongfullyTypedDataPointsMethod.class), isSuccessful());
     }
 
     @RunWith(Theories.class)
     public static class WithCorrectlyTypedDataPointsMethod {
-        @DataPoint
-        public static String[] correctlyTyped = { "Good", "Morning" };
+        @DataPoint public static String[] correctlyTyped = {"Good", "Morning"};
 
-        @DataPoints
-        public static String[][] anotherCorrectlyTyped() {
-            return new String[][] {
-                    { "Hello", "World" }
-            };
+        @DataPoints public static String[][] anotherCorrectlyTyped() {
+            return new String[][] { { "Hello", "World" } };
         }
 
-        @Theory
-        public void testTheory(String[] array) {
+        @Theory public void testTheory(String[] array) {
         }
     }
 
-    @Test
-    public void pickUpMultiPointDataPointMethods() throws Exception {
+    @Test public void pickUpMultiPointDataPointMethods() throws Exception {
         assertThat(testResult(WithCorrectlyTypedDataPointsMethod.class), isSuccessful());
     }
 }

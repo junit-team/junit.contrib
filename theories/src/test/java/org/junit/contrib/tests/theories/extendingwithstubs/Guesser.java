@@ -1,9 +1,5 @@
 package org.junit.contrib.tests.theories.extendingwithstubs;
 
-import org.hamcrest.BaseDescription;
-import org.hamcrest.Description;
-import org.junit.internal.AssumptionViolatedException;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -12,6 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
+
+import org.hamcrest.BaseDescription;
+import org.hamcrest.Description;
+import org.junit.AssumptionViolatedException;
 
 public class Guesser<T> extends ReguessableValue {
     static class GuessMap extends HashMap<MethodCall, Object> implements InvocationHandler {
@@ -56,9 +56,8 @@ public class Guesser<T> extends ReguessableValue {
         }
     }
 
-    private final GuessMap guesses;
-
     private final Class<? extends T> type;
+    private final GuessMap guesses;
 
     public Guesser(Class<? extends T> type) {
         this(type, new GuessMap());
@@ -69,25 +68,21 @@ public class Guesser<T> extends ReguessableValue {
         this.guesses = guesses;
     }
 
-    @SuppressWarnings("unchecked")
     public T getProxy() {
-        return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { getType() },
-                guesses);
+        return type.cast(Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { getType() }, guesses));
     }
 
     @Override
     public List<ReguessableValue> reguesses(AssumptionViolatedException e) {
         final ArrayList<ReguessableValue> returnThis = new ArrayList<ReguessableValue>();
         e.describeTo(new BaseDescription() {
-            @Override
-            protected void append(char arg0) {
+            @Override protected void append(char arg0) {
             }
 
             boolean expectedSeen = false;
             Object expected = null;
 
-            @Override
-            public Description appendValue(Object value) {
+            @Override public Description appendValue(Object value) {
                 noteValue(value);
                 return super.appendValue(value);
             }
@@ -106,8 +101,7 @@ public class Guesser<T> extends ReguessableValue {
         return returnThis;
     }
 
-    @Override
-    public Object getValue() throws CouldNotGenerateValueException {
+    @Override public Object getValue() throws CouldNotGenerateValueException {
         return getProxy();
     }
 
@@ -115,8 +109,7 @@ public class Guesser<T> extends ReguessableValue {
         return type;
     }
 
-    @Override
-    public String getDescription() throws CouldNotGenerateValueException {
+    @Override public String getDescription() throws CouldNotGenerateValueException {
         return "guesser[" + type + ']';
     }
 }
